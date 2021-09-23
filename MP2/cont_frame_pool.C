@@ -150,8 +150,6 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
         bitmap = (unsigned char *) (info_frame_no * FRAME_SIZE);
     }
     
-    // Number of frames must be "fill" the bitmap!
-    //assert ((nframes % 8 ) == 0);
     
     
     //  Everything ok. Proceed to mark all bits in the bitmap
@@ -259,8 +257,22 @@ void ContFramePool::mark_inaccessible(unsigned long _base_frame_no,
                                       unsigned long _n_frames)
 {
     // IMPLEMENTATION
-    Console::puts("ContframePool::mark_inaccessible not implemented!\n");
-    assert(false);
+    
+    // Let's first do a range check.
+    assert ((_base_frame_no >= base_frame_no) && (_base_frame_no < base_frame_no + n_frames));
+    assert ((_base_frame_no + _n_frames >= base_frame_no) && (_base_frame_no + _n_frames < base_frame_no + n_frames));
+    
+    for(int i = _base_frame_no; i < _base_frame_no + _n_frames; i++)    //Traverse through each frame to allocate
+    {
+    	if(i == _base_frame_no)
+    	allocate(i - base_frame_no, true);
+    	else                              
+    	allocate(i - base_frame_no, false);
+    	
+    	nFreeFrames--;
+    }
+    
+    Console::puts("ContFramePool::mark_inaccessible - Memory marked inaccessigble\n");
 }
 
 void ContFramePool::release_frames(unsigned long _first_frame_no)
