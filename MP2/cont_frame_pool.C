@@ -154,8 +154,9 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
     //assert ((nframes % 8 ) == 0);
     
     
-    // Everything ok. Proceed to mark all bits in the bitmap
-    /* Each char bitmap stores the state of a frame
+    //  Everything ok. Proceed to mark all bits in the bitmap
+    /*  Each char bitmap stores the state of a frame
+        State consists of only 2 bits but uses an enire char for now. (TODO: OPTIMIZAION)
         Zeroth bit -> Free or not
         First bit  -> Head of an allocated frame of sequence or not
         Take note both bits can't be one which would indicate head of a free sequence of streams; Doesn't make logical sense
@@ -186,10 +187,12 @@ bool ContFramePool::isFree(unsigned int _bitmap_index)
 
 void ContFramePool::allocate(unsigned int _bitmap_index, bool _head)
 {
+	unsigned char mask = 0x01;
+	assert((bitmap[_bitmap_index] & mask) == 0x01);        //Check if the frame is actually free or not
+	mask = 0xFF - mask;
+	bitmap[_bitmap_index] = bitmap[_bitmap_index] & mask;  //Clearing the free bit
 	if(_head == true)
-	bitmap[_bitmap_index] = 0x02;
-	else 
-	bitmap[_bitmap_index] = 0x00;	
+	bitmap[_bitmap_index] = bitmap[_bitmap_index] | 0x02;  //Setting the head of sequence bit
 }
 
 unsigned long ContFramePool::get_frames(unsigned int _n_frames)
@@ -237,7 +240,7 @@ unsigned long ContFramePool::get_frames(unsigned int _n_frames)
     
     if(allocated == true)
     {
-    	for(j = i; j <= i+ _n_frames ; j++)         //Set the appropriate head_of_sequence bit & clear the free bit
+    	for(j = i; j <= i+ _n_frames ; j++)         //Set the appropriate head_of_sequence bit & clear the free bits
     	{
     		if(j == i)
     		allocate(j, true);
@@ -255,7 +258,7 @@ unsigned long ContFramePool::get_frames(unsigned int _n_frames)
 void ContFramePool::mark_inaccessible(unsigned long _base_frame_no,
                                       unsigned long _n_frames)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
+    // IMPLEMENTATION
     Console::puts("ContframePool::mark_inaccessible not implemented!\n");
     assert(false);
 }

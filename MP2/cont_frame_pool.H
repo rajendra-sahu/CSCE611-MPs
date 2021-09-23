@@ -49,8 +49,8 @@ private:
     unsigned long info_frame_no;
     unsigned long n_info_frames;
     
-    bool isFree(unsigned int _bitmap_index);   //To check if the fram is free or not.
-    void allocate(unsigned int _bitmap_index, bool _head);
+    bool isFree(unsigned int _bitmap_index);                  //To check if the fram is free or not.
+    void allocate(unsigned int _bitmap_index, bool _head);    //To allocate a single frame
     
 public:
 
