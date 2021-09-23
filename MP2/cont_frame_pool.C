@@ -132,16 +132,124 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
                              unsigned long _info_frame_no,
                              unsigned long _n_info_frames)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
-    Console::puts("ContframePool::Constructor not implemented!\n");
-    assert(false);
+    // IMPLEMENTATION
+    base_frame_no = _base_frame_no;
+    n_frames = _n_frames;
+    nFreeFrames = _n_frames;
+    info_frame_no = _info_frame_no;
+    n_info_frames = _n_info_frames;
+    
+    
+    // If _info_frame_no is zero then we keep management info in the first
+    //frame, else we use the provided frame to keep management info
+    if(info_frame_no == 0) 
+    {
+        bitmap = (unsigned char *) (base_frame_no * FRAME_SIZE);
+    } else 
+    {
+        bitmap = (unsigned char *) (info_frame_no * FRAME_SIZE);
+    }
+    
+    // Number of frames must be "fill" the bitmap!
+    //assert ((nframes % 8 ) == 0);
+    
+    
+    // Everything ok. Proceed to mark all bits in the bitmap
+    /* Each char bitmap stores the state of a frame
+        Zeroth bit -> Free or not
+        First bit  -> Head of an allocated frame of sequence or not
+        Take note both bits can't be one which would indicate head of a free sequence of streams; Doesn't make logical sense
+        Assumption : A head of sequence frame will have it's free bit cleared.
+        To initialize set the first frame as head and rest all free*/
+    for(int i=0; i < _n_frames; i++) 
+    {
+        bitmap[i] = 0x01;    //Only setting the zeroth bit i.e. free 
+    }
+    
+    // Mark the first frame as being used if it is being used
+    if(_info_frame_no == 0) 
+    {
+        bitmap[0] = 0x02;   //Setting the head of sequence bit & clearing the free bit
+        nFreeFrames--;
+    }
+    
+    Console::puts("ContframePool::Frame pool initialized!\n");
+}
+
+bool ContFramePool::isFree(unsigned int _bitmap_index)
+{
+	if((bitmap[_bitmap_index] & 0x1) == 0X1)
+	return true;
+	else
+	return false;
+}
+
+void ContFramePool::allocate(unsigned int _bitmap_index, bool _head)
+{
+	if(_head == true)
+	bitmap[_bitmap_index] = 0x02;
+	else 
+	bitmap[_bitmap_index] = 0x00;	
 }
 
 unsigned long ContFramePool::get_frames(unsigned int _n_frames)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
-    Console::puts("ContframePool::get_frames not implemented!\n");
-    assert(false);
+    // IMPLEMENTATION
+    
+    // Any frames left to allocate?
+    assert(nFreeFrames > 0);
+    
+    unsigned int frame_no = base_frame_no;
+    
+    unsigned int i = 0;
+    unsigned int j = 0;
+    bool free_frames_flag = true;  //Intermediate flag that indicates that a free sequence of frames was found 
+    bool allocated = false;        //Final flag that indicates 
+    while(i < n_frames)
+    {
+    	if(isFree(i) == true)      //start off the search with atleast one free frame
+    	{
+    		for(j = i; j <= i+ _n_frames ; j++)    //traverse for the next _n_frames
+    		{
+    			if(isFree(j) == false)         //Allocated frame found; allocation of _n_frames not possible in this range
+    			{
+    				free_frames_flag = false;
+    				break;
+    			}
+    		}
+    		if(free_frames_flag == true)         //_n_frames free frames found
+    		{
+    			frame_no = frame_no + i;     
+    			allocated = true;
+    			break;
+    		}
+    		if(free_frames_flag == 0)             //traverse the remaining list
+    		{
+    			free_frames_flag = true;
+    			i = j + 1;
+    		}
+
+    		
+    	}
+    	else
+    	i++;
+    }
+    
+    if(allocated == true)
+    {
+    	for(j = i; j <= i+ _n_frames ; j++)         //Set the appropriate head_of_sequence bit & clear the free bit
+    	{
+    		if(j == i)
+    		allocate(j, true);
+    		else
+    		allocate(j, false);
+    	}
+    	 nFreeFrames = nFreeFrames - _n_frames;    //Reduce the no of free frames
+    	return frame_no;
+    }
+    else
+    return 0;                                     //Allocation request didn't go through ; return 0
+    
 }
 
 void ContFramePool::mark_inaccessible(unsigned long _base_frame_no,
@@ -164,4 +272,5 @@ unsigned long ContFramePool::needed_info_frames(unsigned long _n_frames)
     // TODO: IMPLEMENTATION NEEEDED!
     Console::puts("ContframePool::need_info_frames not implemented!\n");
     assert(false);
+    return 0;
 }

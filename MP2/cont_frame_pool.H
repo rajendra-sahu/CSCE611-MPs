@@ -42,6 +42,15 @@ class ContFramePool {
     
 private:
     /* -- DEFINE YOUR CONT FRAME POOL DATA STRUCTURE(s) HERE. */
+    unsigned char* bitmap;
+    unsigned long base_frame_no;
+    unsigned long n_frames;
+    unsigned long nFreeFrames;
+    unsigned long info_frame_no;
+    unsigned long n_info_frames;
+    
+    bool isFree(unsigned int _bitmap_index);   //To check if the fram is free or not.
+    void allocate(unsigned int _bitmap_index, bool _head);
     
 public:
 
