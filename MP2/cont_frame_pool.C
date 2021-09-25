@@ -229,8 +229,6 @@ unsigned long ContFramePool::get_frames(unsigned int _n_frames)
     			free_frames_flag = true;
     			i = j + 1;
     		}
-
-    		
     	}
     	else
     	i++;
@@ -277,15 +275,14 @@ void ContFramePool::mark_inaccessible(unsigned long _base_frame_no,
 
 void ContFramePool::release_frames(unsigned long _first_frame_no)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
+    // IMPLEMENTATION
+    
     Console::puts("ContframePool::release_frames not implemented!\n");
-    assert(false);
 }
 
 unsigned long ContFramePool::needed_info_frames(unsigned long _n_frames)
 {
-    // TODO: IMPLEMENTATION NEEEDED!
-    Console::puts("ContframePool::need_info_frames not implemented!\n");
-    assert(false);
-    return 0;
+    // IMPLEMENTATION 
+
+    return _n_frames;     //Since it's a 1 byte per frame implementation till now
 }
