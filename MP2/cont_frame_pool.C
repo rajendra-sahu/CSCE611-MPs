@@ -127,6 +127,8 @@
 /* METHODS FOR CLASS   C o n t F r a m e P o o l */
 /*--------------------------------------------------------------------------*/
 
+ContFramePool* ContFramePool::head;
+
 ContFramePool::ContFramePool(unsigned long _base_frame_no,
                              unsigned long _n_frames,
                              unsigned long _info_frame_no,
@@ -153,8 +155,8 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
     
     
     //  Everything ok. Proceed to mark all bits in the bitmap
-    /*  Each char bitmap stores the state of a frame
-        State consists of only 2 bits but uses an enire char for now. (TODO: OPTIMIZAION)
+    /*  Each 8 bit char bitmap stores the state of a frame,
+        State consists of only 2 bits but uses an enire char for now, so only 2 LSB bits used. (TODO: OPTIMIZAION)
         Zeroth bit -> Free or not
         First bit  -> Head of an allocated frame of sequence or not
         Take note both bits can't be one which would indicate head of a free sequence of streams; Doesn't make logical sense
@@ -172,12 +174,24 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
         nFreeFrames--;
     }
     
-    /*if(head == nullptr)
+    //TODO Comment the logic or working
+    if(head == nullptr)
     {
     	head = this;
     }
+    else
+    {
+    	ContFramePool* temp;
+    	temp = head;
+    	while(temp->next != nullptr)
+    	{
+    		temp = temp->next;
+    	}
+    	temp->next = this;
+    }
     //head = nullptr;
-    next = nullptr;*/
+    next = nullptr;
+    
     Console::puts("ContframePool::Frame pool initialized!\n");
 }
 
@@ -192,11 +206,19 @@ bool ContFramePool::isFree(unsigned int _bitmap_index)
 void ContFramePool::allocate(unsigned int _bitmap_index, bool _head)
 {
 	unsigned char mask = 0x01;
-	assert((bitmap[_bitmap_index] & mask) == 0x01);        //Check if the frame is actually free or not
+	assert((bitmap[_bitmap_index] & mask) == 0x01);        //Check if the frame is actually free or not TODO use isFree()
 	mask = 0xFF - mask;
 	bitmap[_bitmap_index] = bitmap[_bitmap_index] & mask;  //Clearing the free bit
 	if(_head == true)
 	bitmap[_bitmap_index] = bitmap[_bitmap_index] | 0x02;  //Setting the head of sequence bit
+}
+void ContFramePool::release(unsigned int _bitmap_index)
+{
+	assert(isFree(_bitmap_index) == false);                  //Check if the frame is actually allocated or not.
+	
+	 unsigned char mask = 0x01;
+	 bitmap[_bitmap_index] = bitmap[_bitmap_index] | mask;   //Setting the free bit 
+	 bitmap[_bitmap_index] = bitmap[_bitmap_index] & 0xFD;   //Clearing the head of sequence bit irrespective of its state
 }
 
 unsigned long ContFramePool::get_frames(unsigned int _n_frames)
@@ -283,8 +305,33 @@ void ContFramePool::release_frames(unsigned long _first_frame_no)
 {
     // IMPLEMENTATION
     
-    Console::puts("ContframePool::release_frames not implemented!\n");
-    assert(false);
+    //Find which frame pool the sequence of frames belongs to
+    
+    ContFramePool* required_frame_pool = ContFramePool::head;
+    while(required_frame_pool->next != nullptr)
+    {
+    	if((_first_frame_no >= required_frame_pool->base_frame_no) && (_first_frame_no < required_frame_pool->base_frame_no + required_frame_pool->n_frames))
+    	{
+    		//Framepool found
+    		break;
+    	}
+    	required_frame_pool = required_frame_pool->next;
+    }
+    
+    required_frame_pool->release_frames_from_pool(_first_frame_no);
+    //Console::puts("ContframePool::release_frames not implemented!\n");
+    //assert(false);
+}
+
+void ContFramePool::release_frames_from_pool(unsigned long _first_frame_no)
+{
+	unsigned long i = _first_frame_no;
+	while(isFree(i - base_frame_no) == false)
+	{
+		release(i - base_frame_no);
+		nFreeFrames++;
+		i++;
+	}
 }
 
 unsigned long ContFramePool::needed_info_frames(unsigned long _n_frames)

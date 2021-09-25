@@ -49,11 +49,17 @@ private:
     unsigned long info_frame_no;
     unsigned long n_info_frames;
     
+    //helper functions
     bool isFree(unsigned int _bitmap_index);                  //To check if the fram is free or not.
     void allocate(unsigned int _bitmap_index, bool _head);    //To allocate a single frame
+    void release(unsigned int _bitmap_index);                 //TODO comment
     
-public:
 
+    ContFramePool* next;                                      //TODO comment
+public: 
+    
+    static ContFramePool* head;                               //TODO comment             
+        
     // The frame size is the same as the page size, duh...    
     static const unsigned int FRAME_SIZE = Machine::PAGE_SIZE; 
 
@@ -81,6 +87,8 @@ public:
      NOTE: This function must be called before the paging system
      is initialized.
      */
+    
+
     
     unsigned long get_frames(unsigned int _n_frames);
     /*
@@ -110,6 +118,9 @@ public:
      This function must first identify the correct frame pool and then call the frame
      pool's release_frame function.
      */
+     
+    void release_frames_from_pool(unsigned long _first_frame_no);
+    //the actual function which releases frames from a specific frame pool
     
     static unsigned long needed_info_frames(unsigned long _n_frames);
     /*
