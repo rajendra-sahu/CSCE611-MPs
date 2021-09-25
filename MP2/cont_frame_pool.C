@@ -172,6 +172,12 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
         nFreeFrames--;
     }
     
+    /*if(head == nullptr)
+    {
+    	head = this;
+    }
+    //head = nullptr;
+    next = nullptr;*/
     Console::puts("ContframePool::Frame pool initialized!\n");
 }
 
@@ -278,6 +284,7 @@ void ContFramePool::release_frames(unsigned long _first_frame_no)
     // IMPLEMENTATION
     
     Console::puts("ContframePool::release_frames not implemented!\n");
+    assert(false);
 }
 
 unsigned long ContFramePool::needed_info_frames(unsigned long _n_frames)
