@@ -127,7 +127,7 @@
 /* METHODS FOR CLASS   C o n t F r a m e P o o l */
 /*--------------------------------------------------------------------------*/
 
-ContFramePool* ContFramePool::head;
+ContFramePool* ContFramePool::head;                      //formward declaration
 
 ContFramePool::ContFramePool(unsigned long _base_frame_no,
                              unsigned long _n_frames,
@@ -162,35 +162,34 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
         Take note both bits can't be one which would indicate head of a free sequence of streams; Doesn't make logical sense
         Assumption : A head of sequence frame will have it's free bit cleared.
         To initialize set the first frame as head and rest all free*/
+        
     for(int i=0; i < _n_frames; i++) 
     {
-        bitmap[i] = 0x01;    //Only setting the zeroth bit i.e. free 
+        bitmap[i] = 0x01;                        //Only setting the zeroth bit i.e. free 
     }
     
-    // Mark the first frame as being used if it is being used
+                                                 // Mark the first frame as being used if it is being used
     if(_info_frame_no == 0) 
     {
-        bitmap[0] = 0x02;   //Setting the head of sequence bit & clearing the free bit
+        bitmap[0] = 0x02;                        //Setting the head of sequence bit & clearing the free bit
         nFreeFrames--;
     }
     
-    //TODO Comment the logic or working
-    if(head == nullptr)
+    if(head == nullptr)                          //head is null means the list is empty
     {
     	head = this;
     }
-    else
+    else                                         //traverse the non empty list to find the tail
     {
     	ContFramePool* temp;
     	temp = head;
     	while(temp->next != nullptr)
     	{
-    		temp = temp->next;
+    		temp = temp->next;             
     	}
-    	temp->next = this;
+    	temp->next = this;                       //Append the frame pool at the tail
     }
-    //head = nullptr;
-    next = nullptr;
+    next = nullptr;                              //the next ptr of the tail node should point to null 
     
     Console::puts("ContframePool::Frame pool initialized!\n");
 }
@@ -206,12 +205,13 @@ bool ContFramePool::isFree(unsigned int _bitmap_index)
 void ContFramePool::allocate(unsigned int _bitmap_index, bool _head)
 {
 	unsigned char mask = 0x01;
-	assert((bitmap[_bitmap_index] & mask) == 0x01);        //Check if the frame is actually free or not TODO use isFree()
+	assert(isFree(_bitmap_index) == true);                 //Check if the frame is actually free or not
 	mask = 0xFF - mask;
 	bitmap[_bitmap_index] = bitmap[_bitmap_index] & mask;  //Clearing the free bit
 	if(_head == true)
 	bitmap[_bitmap_index] = bitmap[_bitmap_index] | 0x02;  //Setting the head of sequence bit
-}
+} 
+
 void ContFramePool::release(unsigned int _bitmap_index)
 {
 	assert(isFree(_bitmap_index) == false);                  //Check if the frame is actually allocated or not.
@@ -295,7 +295,7 @@ void ContFramePool::mark_inaccessible(unsigned long _base_frame_no,
     	else                              
     	allocate(i - base_frame_no, false);
     	
-    	nFreeFrames--;
+    	nFreeFrames--;                                                  //Reduce the free frames count
     }
     
     Console::puts("ContFramePool::mark_inaccessible - Memory marked inaccessigble\n");
@@ -318,18 +318,18 @@ void ContFramePool::release_frames(unsigned long _first_frame_no)
     	required_frame_pool = required_frame_pool->next;
     }
     
+    //Release frames via this frame pool specific release function
     required_frame_pool->release_frames_from_pool(_first_frame_no);
-    //Console::puts("ContframePool::release_frames not implemented!\n");
-    //assert(false);
 }
 
 void ContFramePool::release_frames_from_pool(unsigned long _first_frame_no)
 {
 	unsigned long i = _first_frame_no;
+	//Release frame one by one
 	while(isFree(i - base_frame_no) == false)
 	{
-		release(i - base_frame_no);
-		nFreeFrames++;
+		release(i - base_frame_no);     //release one frame      
+		nFreeFrames++;                  //Increase free count
 		i++;
 	}
 }

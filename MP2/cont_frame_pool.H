@@ -50,15 +50,20 @@ private:
     unsigned long n_info_frames;
     
     //helper functions
-    bool isFree(unsigned int _bitmap_index);                  //To check if the fram is free or not.
+    bool isFree(unsigned int _bitmap_index);                  //To check if the frame is free or not.
     void allocate(unsigned int _bitmap_index, bool _head);    //To allocate a single frame
-    void release(unsigned int _bitmap_index);                 //TODO comment
+    void release(unsigned int _bitmap_index);                 //To release a single frame
     
-
-    ContFramePool* next;                                      //TODO comment
+    /*The frame pool list has been implemneted through 2 ContFramePool pointers.
+      next - private non-static next pointer to point to the next frame pool
+      head - public static pointer to the head of the tail that has the same value for every node.
+      The list will be traversed with the help of the next pointer*/
+      
+    ContFramePool* next;
+                                          
 public: 
     
-    static ContFramePool* head;                               //TODO comment             
+    static ContFramePool* head;                                          
         
     // The frame size is the same as the page size, duh...    
     static const unsigned int FRAME_SIZE = Machine::PAGE_SIZE; 
@@ -120,7 +125,7 @@ public:
      */
      
     void release_frames_from_pool(unsigned long _first_frame_no);
-    //the actual function which releases frames from a specific frame pool
+    /*the actual function which releases frames from a specific frame pool*/
     
     static unsigned long needed_info_frames(unsigned long _n_frames);
     /*
