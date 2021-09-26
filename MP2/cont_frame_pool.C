@@ -167,6 +167,11 @@ unsigned char ContFramePool::getState(unsigned long _frame_index_4_multiple, uns
 
 void ContFramePool::setState(unsigned long _frame_index_4_multiple, unsigned short _bitmap_index, unsigned char val)
 {
+	/*
+	Since it's just a 2 bit state setting that directly won't affect the state of unconcerned bits.
+	Hence bit operation AND , OR are not really required
+	*/
+	
 	if(_bitmap_index == 0x0)
 	{bitmap[_frame_index_4_multiple].bmp0 = val;}
 	if(_bitmap_index == 0x1)
@@ -204,8 +209,9 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
     
     
     //  Everything ok. Proceed to mark all frames free
-        
-    for(int i=0; i < _n_frames; i++) 
+    
+    unsigned long i;    
+    for(i=0; i < _n_frames; i++) 
     {                        
         setState(i/4, i%4, FREE);                      //Only setting the zeroth bit i.e. free
         /*Please take care that we don't access the wrong bitmpas in the last _frame_index_4_multiple 
@@ -213,20 +219,30 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
     }
     
                                                  
-    if(info_frame_no == 0)                       // Mark the first frame as being used if it is being used
+    if(info_frame_no == 0)                             // Mark the first frame as being used if it is being used
     {                       
-        setState(0x0, 0x0, ALLOCATE_AND_HEAD);   //Clearing the free bit & setting head of sequence bit in the first frame state
+        setState(0x0, 0x0, ALLOCATE_AND_HEAD);         //Clearing the free bit & setting head of sequence bit in the first frame state
         nFreeFrames--;
     }
-    //TODO Implement if info_frame_no is non zero
+    else                                               //Case when info_frame_no != 0 & management info is of n_info_frames allocated frames
+    {
+    	for(i = info_frame_no; i < (info_frame_no + n_info_frames); i++)
+    	{
+    		if(i == info_frame_no)                 //set each frame's allocate state accordingly 
+    		{ setState((i - base_frame_no)/4, (i - base_frame_no)%4, ALLOCATE_AND_HEAD); }
+    		else
+    		{ setState((i - base_frame_no)/4, (i - base_frame_no)%4, ALLOCATE_BUT_NOT_HEAD); }
+    		nFreeFrames--;
+    	} 
+    }
     
     
     /*Lets update the list of frame pools*/
-    if(head == nullptr)                          //head is null means the list is empty
+    if(head == nullptr)                               //head is null means the list is empty
     {
     	head = this;
     }
-    else                                         //traverse the non empty list to find the tail
+    else                                              //traverse the non empty list to find the tail
     {
     	ContFramePool* temp;
     	temp = head;
@@ -234,9 +250,9 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
     	{
     		temp = temp->next;             
     	}
-    	temp->next = this;                       //Append the frame pool at the tail
+    	temp->next = this;                            //Append the current frame pool at the tail
     }
-    next = nullptr;                              //the next ptr of the tail node should point to null 
+    next = nullptr;                                   //the next ptr of the tail node should point to null 
     
     Console::puts("ContframePool::Frame pool initialized!\n");
 }
@@ -244,9 +260,9 @@ ContFramePool::ContFramePool(unsigned long _base_frame_no,
 bool ContFramePool::isFree(unsigned long _frame_index)
 {
 	if( (getState(_frame_index/4, _frame_index%4) & FREE) == FREE)
-	{return true;}
+	{ return true; }
 	else
-	{return false;}
+	{ return false; }
 }
 
 void ContFramePool::allocate(unsigned long _frame_index, bool _head)
