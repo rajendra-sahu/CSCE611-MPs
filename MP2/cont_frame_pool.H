@@ -32,7 +32,13 @@
 /* DATA STRUCTURES */
 /*--------------------------------------------------------------------------*/
 
-/* -- (none) -- */
+typedef struct bitmap_char_
+{
+	unsigned char bmp0 : 2;
+	unsigned char bmp1 : 2;
+	unsigned char bmp2 : 2;
+	unsigned char bmp3 : 2;
+} bitmap_char_s;
 
 /*--------------------------------------------------------------------------*/
 /* C o n t F r a m e   P o o l  */
@@ -42,7 +48,7 @@ class ContFramePool {
     
 private:
     /* -- DEFINE YOUR CONT FRAME POOL DATA STRUCTURE(s) HERE. */
-    unsigned char* bitmap;
+    bitmap_char_s* bitmap;
     unsigned long base_frame_no;
     unsigned long n_frames;
     unsigned long nFreeFrames;
@@ -50,9 +56,11 @@ private:
     unsigned long n_info_frames;
     
     //helper functions
-    bool isFree(unsigned int _bitmap_index);                  //To check if the frame is free or not.
-    void allocate(unsigned int _bitmap_index, bool _head);    //To allocate a single frame
-    void release(unsigned int _bitmap_index);                 //To release a single frame
+    unsigned char getState(unsigned long _frame_index_4_multiple, unsigned short _bitmap_index );
+    void setState(unsigned long _frame_index_4_multiple, unsigned short _bitmap_index, unsigned char val);
+    bool isFree(unsigned long _frame_index);                  //To check if the frame is free or not.
+    void allocate(unsigned long _frame_index, bool _head);    //To allocate a single frame
+    void release(unsigned long _frame_index);                 //To release a single frame
     
     /*The frame pool list has been implemneted through 2 ContFramePool pointers.
       next - private non-static next pointer to point to the next frame pool
@@ -113,6 +121,9 @@ public:
      _n_frames: Number of contiguous frames to mark as inaccessible.
      */
     
+    void release_frames_from_pool(unsigned long _first_frame_no);
+    /*the actual function which releases frames from a specific frame pool*/
+    
     static void release_frames(unsigned long _first_frame_no);
     /*
      Releases a previously allocated contiguous sequence of frames
@@ -124,8 +135,6 @@ public:
      pool's release_frame function.
      */
      
-    void release_frames_from_pool(unsigned long _first_frame_no);
-    /*the actual function which releases frames from a specific frame pool*/
     
     static unsigned long needed_info_frames(unsigned long _n_frames);
     /*
