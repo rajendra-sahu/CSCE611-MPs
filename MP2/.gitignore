@@ -6,13 +6,4 @@
 *.o
 *.elf
 
-#ignore image file
-*.img
-
-
-# ignore specific files
-bochsout.txt
-BIOS-bochs-latest
-Icon
-VGABIOS-lgpl-latest
 
