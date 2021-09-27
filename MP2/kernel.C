@@ -94,9 +94,9 @@ int main() {
 
     /* -- TEST MEMORY ALLOCATOR */
     
-    test_memory(&kernel_mem_pool, 64);
+    test_memory(&kernel_mem_pool, 128);
     
-    test_memory(&process_mem_pool, 64);
+    test_memory(&process_mem_pool, 128);
 
     /* ---- Add code here to test the frame pool implementation. */
     

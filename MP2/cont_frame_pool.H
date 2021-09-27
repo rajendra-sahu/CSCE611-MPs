@@ -56,8 +56,18 @@ private:
     unsigned long n_info_frames;
     
     //helper functions
+    
+    /*
+	Only specific to getter setter pair :
+	_frame_index_4_multiple -> index to refer the char that contains frame state out of the char array
+	_bitmap_index           -> bitmap index to refer the actual state from the 4 states present in 1 char 
+	Since the state is 2 bits & char is 8 bits the factor of 4 comes into picture
+	
+    */
     unsigned char getState(unsigned long _frame_index_4_multiple, unsigned short _bitmap_index );
     void setState(unsigned long _frame_index_4_multiple, unsigned short _bitmap_index, unsigned char val);
+    
+    
     bool isFree(unsigned long _frame_index);                  //To check if the frame is free or not.
     void allocate(unsigned long _frame_index, bool _head);    //To allocate a single frame
     void release(unsigned long _frame_index);                 //To release a single frame

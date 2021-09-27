@@ -101,9 +101,8 @@
 	Each 8 bit char bitmap stores the state of 4 frames.
 	Appropriate calculation is in place to refer the correct char & state index
 
-	Take note both bits can't be one which would indicate head of a free sequence of streams; Doesn't make logical sense
+	Take note both bits can't be one which would indicate head of a free sequence of frames; Doesn't make logical sense
 	Hence a head of sequence frame will have it's free bit cleared.
-	To initialize set the first frame as head and rest all free
 */
         
 #define ALLOCATE_BUT_NOT_HEAD 0x0
@@ -141,13 +140,6 @@ ContFramePool* ContFramePool::head;
 /*--------------------------------------------------------------------------*/
 /* METHODS FOR CLASS   C o n t F r a m e P o o l */
 /*--------------------------------------------------------------------------*/
-
-/*
-	_frame_index_4_multiple -> index to refer the char that contains frame state out of the char array
-	_bitmap_index           -> bitmap index to refer the actual state from the 4 states present in 1 char 
-	Since the state is 2 bits & char is 8 bits the factor of 4 comes into picture
-	
-*/
 
 unsigned char ContFramePool::getState(unsigned long _frame_index_4_multiple, unsigned short _bitmap_index)
 {
