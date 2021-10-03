@@ -59,6 +59,7 @@ int main() {
     
     GDT::init();
     Console::init();
+    Console::output_redirection(true);
     IDT::init();
     ExceptionHandler::init_dispatcher();
     IRQ::init();
