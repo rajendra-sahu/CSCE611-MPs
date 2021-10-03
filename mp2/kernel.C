@@ -62,6 +62,7 @@ void test_memory(ContFramePool * _pool, unsigned int _allocs_to_go);
 int main() {
 
     Console::init();
+    Console::output_redirection(true);
 
     /* -- INITIALIZE FRAME POOLS -- */
 
