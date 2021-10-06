@@ -71,7 +71,7 @@ public:
      NOTE2: It may also be simpler to create the first page table *before* 
      paging has been enabled.
   */
-
+  
   void load();
   /* Makes the given page table the current table. This must be done once during
      system startup and whenever the address space is switched (e.g. during
