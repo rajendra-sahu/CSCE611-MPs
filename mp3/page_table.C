@@ -11,6 +11,7 @@ ContFramePool * PageTable::process_mem_pool = NULL;
 unsigned long PageTable::shared_size = 0;
 
 //TODO Put meaingful asserts in the functions
+//TODO Create a function to convert frame no to physical address.
 
 
 void PageTable::init_paging(ContFramePool * _kernel_mem_pool,
@@ -29,9 +30,9 @@ void PageTable::init_paging(ContFramePool * _kernel_mem_pool,
 PageTable::PageTable()
 {
 
-   page_directory = (unsigned long *)kernel_mem_pool->get_frames(1);            //Need only one frame for the page directory
+   page_directory = (unsigned long *)(kernel_mem_pool->get_frames(1) << 12);            //Need only one frame for the page directory
    
-   unsigned long *page_table = (unsigned long *)kernel_mem_pool->get_frames(1); //Since only first entry of PDE is valid.
+   unsigned long *page_table = (unsigned long *)(kernel_mem_pool->get_frames(1) << 12); //Since only first entry of PDE is valid.
    
    unsigned long address=0; // holds the physical address of where a page is
    unsigned int i;
@@ -44,7 +45,7 @@ PageTable::PageTable()
    }
 
    // fill the first entry of the page directory
-   page_directory[0] = page_table;        // attribute set to: supervisor level, read/write, present(011 in binary)
+   page_directory[0] = (unsigned long)page_table;        // attribute set to: supervisor level, read/write, present(011 in binary)
    page_directory[0] = page_directory[0] | 3;
    
    for(i=1; i<1024; i++)
@@ -61,7 +62,7 @@ PageTable::PageTable()
 void PageTable::load()
 {
    current_page_table = this;
-   write_cr3(page_directory); // put that page directory address into CR3
+   write_cr3((unsigned long)page_directory); // put that page directory address into CR3
    
    //assert(false);
    Console::puts("Loaded page table\n");
