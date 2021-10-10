@@ -10,8 +10,6 @@ ContFramePool * PageTable::kernel_mem_pool = NULL;
 ContFramePool * PageTable::process_mem_pool = NULL;
 unsigned long PageTable::shared_size = 0;
 
-//TODO Put meaingful asserts in the functions
-
 
 void PageTable::init_paging(ContFramePool * _kernel_mem_pool,
                             ContFramePool * _process_mem_pool,
@@ -21,8 +19,6 @@ void PageTable::init_paging(ContFramePool * _kernel_mem_pool,
    kernel_mem_pool = _kernel_mem_pool;
    process_mem_pool = _process_mem_pool;
    shared_size = _shared_size;
-   
-   //assert(false);
    Console::puts("Initialized Paging System\n");
 }
 
@@ -61,28 +57,17 @@ void PageTable::load()
 {
    current_page_table = this;
    write_cr3((unsigned long)page_directory); // put that page directory address into CR3
-   
-   //assert(false);
    Console::puts("Loaded page table\n");
-}
-
-bool PageTable::check_if_pt_loaded()
-{
-   if((unsigned long)(current_page_table->page_directory) == read_cr3())
-   return true;
-   else
-   return false;
-
 }
 
 void PageTable::enable_paging()
 {
-   if(!PageTable::check_if_pt_loaded())
+   if((unsigned long)(current_page_table->page_directory) != read_cr3())                                   //Check if page table loaded before enabling paging
    {
    	Console::puts("Page table not loaded\n");
    	assert(false);
    }
-   write_cr0(read_cr0() | 0x80000000); // set the paging bit in CR0 to 1
+   write_cr0(read_cr0() | CR0_PAGING_BIT);                                                                 // set the paging bit in CR0 to 1
    Console::puts("Enabled paging\n");
 }
 
