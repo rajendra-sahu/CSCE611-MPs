@@ -89,11 +89,11 @@ public:
      paging has been enabled.
      
      We have to make sure the constructor sets up the paging table in the kernel mem_pool
-     & follows one-to-one mapping for the first 4 MB of memory.
+     & follows direct mapping for the first 4 MB of memory.
      Hence the constrcutor follows the following logic
      1. Allocate a kernel pool frame for the page directory.
      2. Allocate a kernel pool frame for a page table which is enough to store mapping of 4MB
-     3. We make all of the entries in page table point to actual memory one-to-one in the 4MB boundary
+     3. We make all of the entries in page table point to actual memory direct in the 4MB boundary
         and also set the atributes in each of the pte as : supervisor level, read/write, present(011 in binary)
      4. We use the zeroth pde to point to the page table created above 
         & attribute set to: supervisor level, read/write, present(011 in binary)
