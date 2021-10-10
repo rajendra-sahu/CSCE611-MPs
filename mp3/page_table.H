@@ -24,6 +24,16 @@
 #define PDE_FIELD_START        22
 #define PTE_FIELD_START        12
 
+#define ERR_CODE_MASK          7
+#define U_W_P                  7            //User,       Write,    Protection Violation
+#define U_W_NP                 6            //User,       Write,    Not present
+#define U_R_P                  5            //User,       Read,     Protection Violation
+#define U_R_NP                 4            //User,       Read,     Not present
+#define S_W_P                  3            //Supervisor, Write,    Protection Violation
+#define S_W_NP                 2            //Supervisor, Write,    Not present
+#define S_R_P                  1            //Supervisor, Read,     Protection Violation
+#define S_R_NP                 0            //Supervisor, Read,     Not Present
+//Protection violation means the page is present
 
 /*--------------------------------------------------------------------------*/
 /* INCLUDES */
@@ -82,7 +92,9 @@ public:
   /* Makes the given page table the current table. This must be done once during
      system startup and whenever the address space is switched (e.g. during
      process switching). */
-
+ 
+  static bool check_if_pt_loaded();
+ 
   static void enable_paging();
   /* Enable paging on the CPU. Typically, a CPU start with paging disabled, and
      memory is accessed by addressing physical memory directly. After paging is
