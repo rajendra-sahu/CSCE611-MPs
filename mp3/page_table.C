@@ -41,7 +41,7 @@ PageTable::PageTable()
    for(i=0; i<1024; i++)
    {
    	page_table[i] = address | 3;       // attribute set to: supervisor level, read/write, present(011 in binary)
-	address = address + 4096;          // 4096 = 4kb
+	address = address + 4096;          // 4096 = 4kb ; size of a frame 
    }
 
    // fill the first entry of the page directory
@@ -80,32 +80,32 @@ void PageTable::enable_paging()
 void PageTable::handle_fault(REGS * _r)
 {
   //assert(false);
-  unsigned long *temp_page_directory = (unsigned long *)read_cr3();
-  unsigned long frame_address = (process_mem_pool->get_frames(1)) << 12;  //Allocate a frame for the missing page
-  unsigned long fault_address = read_cr2();
-  unsigned long pde = (fault_address & 0xFFC00000) >> 22;                        //Extract the PDE index
-  unsigned long pte = (fault_address & 0x3FF000) >> 12;                          //Extract the PTE index 
-  bool flag = false;                                                             // Flag to denote new page table was created
+  unsigned long *temp_page_directory = (unsigned long *)read_cr3();                                  //read page directory address from CR3 register
+  unsigned long frame_address = (process_mem_pool->get_frames(1)) << PHYSICAL_ADDRESS_START;         //Allocate a frame for the missing page
+  unsigned long fault_address = read_cr2();                                                          // Read the addresss that caused page fault
+  unsigned long pde = (fault_address & PDE_INDEX_MASK) >> PDE_FIELD_START;                           //Extract the PDE index
+  unsigned long pte = (fault_address & PTE_INDEX_MASK) >> PTE_FIELD_START;                           //Extract the PTE index 
+  bool flag = false;                                                                                 // Flag to denote new page table was created
 
-  if((temp_page_directory[pde] & 0x1) != 0x1)                                  //PDE is not valid
+  if((temp_page_directory[pde] & 0x1) != 0x1)                                                        //PDE is not valid
   {
-	temp_page_directory[pde] = (kernel_mem_pool->get_frames(1) << 12);     //Allocating frame for a new page table
-	temp_page_directory[pde] = temp_page_directory[pde] | 3;               // attribute set to: supervisor level, read/write, present(011 in binary) 
+	temp_page_directory[pde] = (kernel_mem_pool->get_frames(1) << PHYSICAL_ADDRESS_START);       //Allocating frame for a new page table
+	temp_page_directory[pde] = temp_page_directory[pde] | 3;                                     // attribute set to: supervisor level, read/write, present(011 in binary) 
 	flag = true;
   }
 
-  unsigned long *page_table = (unsigned long *)(temp_page_directory[pde] & 0xFFFFF000);   //Storing it in an intermediate variable
+  unsigned long *page_table = (unsigned long *)(temp_page_directory[pde] & PHYSICAL_ADDRESS_MASK);   //Storing it in an intermediate variable
   
-  if(flag)
+  if(flag)                                                                                           //If a new page table was created init the entries
   {
-	  for(unsigned int i=0; i<1024; i++)
+	  for(unsigned int i=0; i<1024; i++)                                                         //Intialize every entry of page table
 	  {
-		page_table[i] = 0 | 2;                                           // attribute set to: supervisor level, read/write, not present(010 in binary)
+		page_table[i] = 0 | 2;                                                               // attribute set to: supervisor level, read/write, not present(010 in binary)
 	  } 
   }   
 
                 
-  page_table[pte] = frame_address | 3;
+  page_table[pte] = frame_address | 3;                                                              //Set the PTE entry to point to the actual physical frame
   Console::puts("handled page fault\n");
 }
 

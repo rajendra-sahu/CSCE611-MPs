@@ -17,7 +17,13 @@
 /* DEFINES */
 /*--------------------------------------------------------------------------*/
 
-/* -- (none) -- */
+#define PHYSICAL_ADDRESS_MASK  0xFFFFF000
+#define PHYSICAL_ADDRESS_START 12
+#define PDE_INDEX_MASK         0xFFC00000
+#define PTE_INDEX_MASK         0x003FF000
+#define PDE_FIELD_START        22
+#define PTE_FIELD_START        12
+
 
 /*--------------------------------------------------------------------------*/
 /* INCLUDES */

@@ -170,13 +170,13 @@ int main() {
     int *foo = (int *) FAULT_ADDR;
     int i;
     
-    Console::puts("DONE WRITING TO MEMORY. Now testing...\n");
-    Console::putui(NACCESS);
+    
 
     for (i=0; i<NACCESS; i++) {
         foo[i] = i;
     }
 
+    Console::puts("DONE WRITING TO MEMORY. Now testing...\n");
 
     for (i=0; i<NACCESS; i++) {
         if(foo[i] != i) {
