@@ -32,13 +32,7 @@
 /* DATA STRUCTURES */
 /*--------------------------------------------------------------------------*/
 
-typedef struct bitmap_char_
-{
-	unsigned char bmp0 : 2;
-	unsigned char bmp1 : 2;
-	unsigned char bmp2 : 2;
-	unsigned char bmp3 : 2;
-} bitmap_char_s;
+/* -- (none) -- */
 
 /*--------------------------------------------------------------------------*/
 /* C o n t F r a m e   P o o l  */
@@ -48,41 +42,33 @@ class ContFramePool {
     
 private:
     /* -- DEFINE YOUR CONT FRAME POOL DATA STRUCTURE(s) HERE. */
-    bitmap_char_s* bitmap;
-    unsigned long base_frame_no;
-    unsigned long n_frames;
-    unsigned long nFreeFrames;
-    unsigned long info_frame_no;
-    unsigned long n_info_frames;
     
-    //helper functions
+    /* ---- Bag of created frame pools */
     
-    /*
-	Only specific to getter setter pair :
-	_frame_index_4_multiple -> index to refer the char that contains frame state out of the char array
-	_bitmap_index           -> bitmap index to refer the actual state from the 4 states present in 1 char 
-	Since the state is 2 bits & char is 8 bits the factor of 4 comes into picture
-	
-    */
-    unsigned char getState(unsigned long _frame_index_4_multiple, unsigned short _bitmap_index );
-    void setState(unsigned long _frame_index_4_multiple, unsigned short _bitmap_index, unsigned char val);
+    static ContFramePool * head;
+    static ContFramePool * tail;    
+ 
+    ContFramePool * next;
+    ContFramePool * prev;
+   
+    /* ---- Info about this frame pool */
+    unsigned char * bitmap;        // We implement the simple frame pool with a bitmap
+    unsigned long   base_frame_no; // Where does the frame pool start in phys mem?
+    unsigned long   nframes;       // Size of the frame pool
+    unsigned long   info_frame_no; // First of the frames with meta data about pool.
     
+    /* ---- STATE MANAGEMENT */
     
-    bool isFree(unsigned long _frame_index);                  //To check if the frame is free or not.
-    void allocate(unsigned long _frame_index, bool _head);    //To allocate a single frame
-    void release(unsigned long _frame_index);                 //To release a single frame
+    enum class FrameState {Free, Used, HoS};
+
+    FrameState get_state(unsigned long _frame_no);
+    void set_state(unsigned long _frame_no, FrameState _state);
     
-    /*The frame pool list has been implemneted through 2 ContFramePool pointers.
-      next - private non-static next pointer to point to the next frame pool
-      head - public static pointer to the head of the tail that has the same value for every node.
-      The list will be traversed with the help of the next pointer*/
-      
-    ContFramePool* next;
-                                          
-public: 
+    static void add_to_bag(ContFramePool * _new_pool);
+    static void remove_from_bag(ContFramePool * _pool);
     
-    static ContFramePool* head;                                          
-        
+public:
+
     // The frame size is the same as the page size, duh...    
     static const unsigned int FRAME_SIZE = Machine::PAGE_SIZE; 
 
@@ -101,17 +87,11 @@ public:
      management information for the frame pool.
      NOTE: If _info_frame_no is 0, the frame pool is free to
      choose any frames from the pool to store management information.
-     _n_info_frames: If _info_frame_no is NOT 0, this argument specifies the
-     number of consecutive frames needed to store the management information
-     for the frame pool.
-     EXAMPLE: If _info_frame_no is 699 and _n_info_frames is 3,
-     then Frames 699, 700, and 701 are used to store the management information
-     for the frame pool.
      NOTE: This function must be called before the paging system
      is initialized.
      */
     
-
+    void pretty_print(unsigned int _n_frames);
     
     unsigned long get_frames(unsigned int _n_frames);
     /*
@@ -131,9 +111,6 @@ public:
      _n_frames: Number of contiguous frames to mark as inaccessible.
      */
     
-    void release_frames_from_pool(unsigned long _first_frame_no);
-    /*the actual function which releases frames from a specific frame pool*/
-    
     static void release_frames(unsigned long _first_frame_no);
     /*
      Releases a previously allocated contiguous sequence of frames
@@ -144,7 +121,11 @@ public:
      This function must first identify the correct frame pool and then call the frame
      pool's release_frame function.
      */
-     
+    
+    void pool_release_frames(unsigned long _first_frame_no);
+    
+    bool contains(unsigned long _frame_no);
+    
     
     static unsigned long needed_info_frames(unsigned long _n_frames);
     /*
