@@ -83,28 +83,28 @@ void PageTable::handle_fault(REGS * _r)
   unsigned long *temp_page_directory = (unsigned long *)read_cr3();
   unsigned long frame_address = (process_mem_pool->get_frames(1)) << 12;  //Allocate a frame for the missing page
   unsigned long fault_address = read_cr2();
-  unsigned long pde = (fault_address & 0xFFC00000) >> 22;                                //Extract the PDE index
+  unsigned long pde = (fault_address & 0xFFC00000) >> 22;                        //Extract the PDE index
+  unsigned long pte = (fault_address & 0x3FF000) >> 12;                          //Extract the PTE index 
+  bool flag = false;                                                             // Flag to denote new page table was created
 
-  if((temp_page_directory[pde] & 0x1) != 0x1)                                //PDE is not valid
+  if((temp_page_directory[pde] & 0x1) != 0x1)                                  //PDE is not valid
   {
 	temp_page_directory[pde] = (kernel_mem_pool->get_frames(1) << 12);     //Allocating frame for a new page table
-	
+	temp_page_directory[pde] = temp_page_directory[pde] | 3;               // attribute set to: supervisor level, read/write, present(011 in binary) 
+	flag = true;
   }
 
-  unsigned long *page_table = (unsigned long *)(temp_page_directory[pde]);   //Storing it in an intermediate variable
+  unsigned long *page_table = (unsigned long *)(temp_page_directory[pde] & 0xFFFFF000);   //Storing it in an intermediate variable
   
-  if((temp_page_directory[pde] & 0x1) != 0x1)
+  if(flag)
   {
 	  for(unsigned int i=0; i<1024; i++)
 	  {
 		page_table[i] = 0 | 2;                                           // attribute set to: supervisor level, read/write, not present(010 in binary)
-	  }
-	  temp_page_directory[pde] = temp_page_directory[pde] | 3;               // attribute set to: supervisor level, read/write, present(011 in binary) 
+	  } 
   }   
 
-
-  
-  unsigned long pte = (fault_address & 0x3FF000) >> 12;                          //Extract the PTE index                 
+                
   page_table[pte] = frame_address | 3;
   Console::puts("handled page fault\n");
 }
