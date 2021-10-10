@@ -76,9 +76,54 @@ void PageTable::enable_paging()
    Console::puts("Enabled paging\n");
 }
 
+/*void PageTable::create_page_table_mapping(unsigned long _frame_address)
+{
+	unsigned long fault_address = read_cr2();
+	unsigned long pde = fault_address >> 22;                              //Extract the PDE index
+	
+	if((page_directory[pde] & 0x1) != 0x1)                                //PDE is not valid
+	{
+		page_directory[pde] = kernel_mem_pool->get_frames(1) << 12;   //Allocating frame for a new page table
+		page_directory[pde] = page_directory[pde] | 1;                //Setting the present bit 
+	}
+	
+	unsigned long pte = fault_address >> 12;                              //Extract the PTE index                     
+	unsigned long *page_table = (unsigned long *)(page_directory[pde]);   //Storing it in an intermediate variable
+	unsigned int i;
+        for(i=0; i<1024; i++)
+   	{
+		page_table[i] = 0 | 2;                                        // attribute set to: supervisor level, read/write, not present(010 in binary)
+   	}
+	
+	page_table[pte] = _frame_address | 1;                                  // Update the PTE to store the mapping
+	
+	
+}*/
+
 void PageTable::handle_fault(REGS * _r)
 {
-  assert(false);
+  //assert(false);
+  unsigned long *temp_page_directory = (unsigned long *)read_cr3();
+  unsigned long frame_address = process_mem_pool->get_frames(1) << 12;  //Allocate a frame for the missing page
+  unsigned long fault_address = read_cr2();
+  unsigned long pde = fault_address >> 22;                              //Extract the PDE index
+
+  if((temp_page_directory[pde] & 0x1) != 0x1)                                //PDE is not valid
+  {
+	temp_page_directory[pde] = kernel_mem_pool->get_frames(1) << 12;     //Allocating frame for a new page table
+	temp_page_directory[pde] = temp_page_directory[pde] | 1;                  //Setting the present bit 
+  }
+
+  unsigned long pte = fault_address >> 12;                              //Extract the PTE index                     
+  unsigned long *page_table = (unsigned long *)(temp_page_directory[pde]);   //Storing it in an intermediate variable
+  unsigned int i;
+  for(i=0; i<1024; i++)
+  {
+	page_table[i] = 0 | 2;                                           // attribute set to: supervisor level, read/write, not present(010 in binary)
+  }
+
+  page_table[pte] = frame_address | 1;
   Console::puts("handled page fault\n");
 }
+
 

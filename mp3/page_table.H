@@ -81,10 +81,15 @@ public:
   /* Enable paging on the CPU. Typically, a CPU start with paging disabled, and
      memory is accessed by addressing physical memory directly. After paging is
      enabled, memory is addressed logically. */
+     
+  //void create_page_table_mapping(unsigned long _frame_address);
+  /* Ensures there's a path created to reach to the concerned PTE entry(PDE->PTE) & then updates the page table entries to store the mapping*/
 
   static void handle_fault(REGS * _r);
   /* The page fault handler. */
+  
 
+  
 };
 
 #endif
