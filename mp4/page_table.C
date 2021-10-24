@@ -109,32 +109,36 @@ void PageTable::handle_fault(REGS * _r)
   
   if((_r->err_code & 0x1) == 0x0)  //Non-present page error code only 
   {
-	  unsigned long *physical_page_directory = (unsigned long *)read_cr3();                                  //read page directory address from CR3 register
+	  //unsigned long is of 8 bytes
+	  //unsigned long *physical_page_directory = (unsigned long *)read_cr3();                                  //read page directory address from CR3 register
 	  unsigned long frame_address = (process_mem_pool->get_frames(1)) << PHYSICAL_ADDRESS_START;             //Allocate a frame for the missing page
 	  unsigned long fault_address = read_cr2();                                                              // Read the addresss that caused page fault
 	  unsigned long pde = (fault_address & PDE_INDEX_MASK) >> PDE_FIELD_START;                               //Extract the PDE index
 	  unsigned long pte = (fault_address & PTE_INDEX_MASK) >> PTE_FIELD_START;                               //Extract the PTE index 
 	  bool flag = false;                                                                                     // Flag to denote new page table was created
 	  
-	  unsigned long *logical_page_directory = 0xFFFFF000;                                                                                     
+	  unsigned long *logical_pde = (unsigned long *)(0xFFFFF000 + (pde * 0x4));                                                                                     
 
-	  if((physical_page_directory[pde] & 0x1) != 0x1)                                                        //PDE is not valid
+	  if((*logical_pde & 0x1) != 0x1)                                                        //PDE is not valid
 	  {
-		physical_page_directory[pde] = (process_mem_pool->get_frames(1) << PHYSICAL_ADDRESS_START);       //Allocating frame for a new page table
-		physical_page_directory[pde] = physical_page_directory[pde] | S_W_P;                              // attribute set to: supervisor level, read/write, present(011 in binary) 
+		*logical_pde = (process_mem_pool->get_frames(1) << PHYSICAL_ADDRESS_START);       //Allocating frame for a new page table
+		*logical_pde = *logical_pde | S_W_P;                                              // attribute set to: supervisor level, read/write, present(011 in binary) 
 		flag = true;
 	  }
 
-	  unsigned long *page_table = (unsigned long *)(physical_page_directory[pde] & PHYSICAL_ADDRESS_MASK);   //Storing it in an intermediate variable
+	  //unsigned long *physical_page_table = (unsigned long *)(physical_page_directory[pde] & PHYSICAL_ADDRESS_MASK);   //Storing it in an intermediate variable
+	  
+	  unsigned long *logical_pte = (unsigned long *)(0xFFC00000 | (pde << PHYSICAL_ADDRESS_START));
+	  
 	  
 	  if(flag)                                                                                           //If a new page table was created init the entries
 	  {
 		  for(unsigned int i=0; i<1024; i++)                                                         //Intialize every entry of page table
 		  {
-			page_table[i] = 0 | S_W_NP;                                                          // attribute set to: supervisor level, read/write, not present(010 in binary)
+			*(logical_pte + i) = 0 | S_W_NP;                                                          // attribute set to: supervisor level, read/write, not present(010 in binary)
 		  } 
 	  }             
-	  page_table[pte] = frame_address | S_W_P;                                                           //Set the PTE entry to point to the actual physical frame
+	  *(logical_pte + pte) = frame_address | S_W_P;                                                           //Set the PTE entry to point to the actual physical frame
 	                                                                                                     // attribute set to: supervisor level, read/write, present(011 in binary)
   } 
   else
