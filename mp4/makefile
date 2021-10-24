@@ -64,7 +64,7 @@ page_table.o: page_table.C page_table.H paging_low.H vm_pool.H cont_frame_pool.H
 	$(GCC) $(GCC_OPTIONS) -c -o page_table.o page_table.C
 
 cont_frame_pool.o: cont_frame_pool.C cont_frame_pool.H
-	$(GCC) $(GCC_OPTIONS) -c -o cont_frame_pool.o cont_frame_pool.C
+	#$(GCC) $(GCC_OPTIONS) -c -o cont_frame_pool.o cont_frame_pool.C
 
 vm_pool.o: vm_pool.C vm_pool.H page_table.H
 	$(GCC) $(GCC_OPTIONS) -c -o vm_pool.o vm_pool.C
