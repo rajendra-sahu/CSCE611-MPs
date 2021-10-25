@@ -56,6 +56,16 @@
 class VMPool;
 
 /*--------------------------------------------------------------------------*/
+/* DATA STRUCTURES */
+/*--------------------------------------------------------------------------*/
+
+typedef struct vmpool_node_
+{
+	VMPool* pool;
+	struct vmpool_node_* next;
+} vmpool_node_s;
+
+/*--------------------------------------------------------------------------*/
 /* P A G E - T A B L E  */
 /*--------------------------------------------------------------------------*/
 
@@ -73,6 +83,8 @@ private:
     
     /* DATA FOR CURRENT PAGE TABLE */
     unsigned long        * page_directory;     /* where is page directory located? */
+    vmpool_node_s        * list_head;          /*List of virtual memory pools*/
+    vmpool_node_s        * list_tail;
     
 public:
     static const unsigned int PAGE_SIZE        = Machine::PAGE_SIZE;

@@ -53,6 +53,9 @@ PageTable::PageTable()
    {
 	page_directory[i] = 0 | S_W_NP;                                                                      // attribute set to: supervisor level, read/write, not present(010 in binary)
    }
+   
+   list_head = NULL;
+   list_tail = NULL;
 
    Console::puts("Constructed Page Table object\n");
 }
@@ -110,14 +113,14 @@ void PageTable::handle_fault(REGS * _r)
   if((_r->err_code & 0x1) == 0x0)  //Non-present page error code only 
   {
 	  //unsigned long is of 8 bytes
-	  //unsigned long *physical_page_directory = (unsigned long *)read_cr3();                                  //read page directory address from CR3 register
+	  //unsigned long *physical_page_directory = (unsigned long *)read_cr3();                                //read page directory address from CR3 register
 	  unsigned long frame_address = (process_mem_pool->get_frames(1)) << PHYSICAL_ADDRESS_START;             //Allocate a frame for the missing page
 	  unsigned long fault_address = read_cr2();                                                              // Read the addresss that caused page fault
 	  unsigned long pde = (fault_address & PDE_INDEX_MASK) >> PDE_FIELD_START;                               //Extract the PDE index
 	  unsigned long pte = (fault_address & PTE_INDEX_MASK) >> PTE_FIELD_START;                               //Extract the PTE index 
-	  bool flag = false;                                                                                     // Flag to denote new page table was created
+	  bool flag = false;                                                                                     // Flag to denote new page table was create
 	  
-	  unsigned long *logical_pde = (unsigned long *)(0xFFFFF000 + (pde * 0x4));                                                                                     
+	  unsigned long *logical_pde = (unsigned long *)(0xFFFFF000 + (pde * 0x4));                              //Computing the logical pde                                          
 
 	  if((*logical_pde & 0x1) != 0x1)                                                        //PDE is not valid
 	  {
@@ -128,17 +131,17 @@ void PageTable::handle_fault(REGS * _r)
 
 	  //unsigned long *physical_page_table = (unsigned long *)(physical_page_directory[pde] & PHYSICAL_ADDRESS_MASK);   //Storing it in an intermediate variable
 	  
-	  unsigned long *logical_pte = (unsigned long *)(0xFFC00000 | (pde << PHYSICAL_ADDRESS_START));
+	  unsigned long *logical_pt = (unsigned long *)(0xFFC00000 | (pde << PHYSICAL_ADDRESS_START));                     //computing the logical address of page table
 	  
 	  
 	  if(flag)                                                                                           //If a new page table was created init the entries
 	  {
 		  for(unsigned int i=0; i<1024; i++)                                                         //Intialize every entry of page table
 		  {
-			*(logical_pte + i) = 0 | S_W_NP;                                                          // attribute set to: supervisor level, read/write, not present(010 in binary)
+			*(logical_pt + i) = 0 | S_W_NP;                                                          // attribute set to: supervisor level, read/write, not present(010 in binary)
 		  } 
 	  }             
-	  *(logical_pte + pte) = frame_address | S_W_P;                                                           //Set the PTE entry to point to the actual physical frame
+	  *(logical_pt + pte) = frame_address | S_W_P;                                                           //Set the PTE entry to point to the actual physical frame
 	                                                                                                     // attribute set to: supervisor level, read/write, present(011 in binary)
   } 
   else
@@ -152,7 +155,22 @@ void PageTable::handle_fault(REGS * _r)
 
 void PageTable::register_pool(VMPool * _vm_pool)
 {
-    assert(false);
+    if(list_head == NULL)
+    {
+    	list_head->pool = _vm_pool;
+    	list_head->next = NULL;
+    	list_tail->pool = _vm_pool;
+    	list_tail->next = NULL;
+    }
+    else
+    {
+    	vmpool_node_s *temp;
+    	temp->pool = _vm_pool;
+    	temp->next = NULL;
+    	list_tail->next = temp;
+    	list_tail = temp;
+    	
+    }
     Console::puts("registered VM pool\n");
 }
 
