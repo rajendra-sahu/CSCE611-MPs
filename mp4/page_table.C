@@ -144,7 +144,7 @@ void PageTable::handle_fault(REGS * _r)
 	  unsigned long fault_address = read_cr2();                                                       // Read the addresss that caused page fault
 	  
 	  /*Checking the legitimacy of address by calling is_legitimate on every registered pool*/
-	  /*bool legitimacy_flag = false;
+	  bool legitimacy_flag = false;
 	  
 	  vmpool_node_s * temp_list =  PageTable::current_page_table->list_head;
 	  while(temp_list)
@@ -156,7 +156,7 @@ void PageTable::handle_fault(REGS * _r)
 	  {
   	  	Console::puts("Address not legitimate\n");                            //Abort the handler
   		assert(false);
-	  }*/
+	  }
 	  
 	  
 	  /*Proceeding with the exception handler*/
