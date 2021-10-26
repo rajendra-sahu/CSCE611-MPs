@@ -149,7 +149,11 @@ void PageTable::handle_fault(REGS * _r)
 	  vmpool_node_s * temp_list =  PageTable::current_page_table->list_head;
 	  while(temp_list)
 	  {
-	  	legitimacy_flag = temp_list->pool->is_legitimate(fault_address);       //check legitimacy of address
+	  	legitimacy_flag = temp_list->pool->is_legitimate(fault_address);       //call is_legitimate on each registered pool
+	  	if(legitimacy_flag == true)
+	  	{
+	  		break;
+	  	}
 	  	temp_list = PageTable::current_page_table->list_head->next;
 	  }
 	  if(!legitimacy_flag)
