@@ -9,7 +9,20 @@ unsigned int PageTable::paging_enabled = 0;
 ContFramePool * PageTable::kernel_mem_pool = NULL;
 ContFramePool * PageTable::process_mem_pool = NULL;
 unsigned long PageTable::shared_size = 0;
+//vmpool_node_s * PageTable::list_head = NULL;
 
+/*bool VMPool::is_legitimate(unsigned long _address)
+ {
+    if((base_address <= _address) && (_address < (base_address + size)))
+    {
+    	return true;
+    }
+    else
+    {
+    	return false;
+    }
+    Console::puts("Checked whether address is part of an allocated region.\n");
+}*/
 
 void PageTable::init_paging(ContFramePool * _kernel_mem_pool,
                             ContFramePool * _process_mem_pool,
@@ -127,12 +140,37 @@ void PageTable::handle_fault(REGS * _r)
   if((_r->err_code & 0x1) == 0x0)  //Non-present page error code only 
   {
 	  //unsigned long is of 8 bytes in GCC 9.3.0
+	  
+	  unsigned long fault_address = read_cr2();                                                       // Read the addresss that caused page fault
+	  
+	  /*Checking the legitimacy of address by calling is_legitimate on every registered pool*/
+	  /*bool legitimacy_flag = false;
+	  
+	  vmpool_node_s * temp_list =  PageTable::current_page_table->list_head;
+	  while(temp_list)
+	  {
+	  	legitimacy_flag = temp_list->pool->is_legitimate(fault_address);       //check legitimacy of address
+	  	temp_list = PageTable::current_page_table->list_head->next;
+	  }
+	  if(!legitimacy_flag)
+	  {
+  	  	Console::puts("Address not legitimate\n");                            //Abort the handler
+  		assert(false);
+	  }*/
+	  
+	  
+	  /*Proceeding with the exception handler*/
+	  
+	  
 	  //unsigned long *physical_page_directory = (unsigned long *)read_cr3();                                //read page directory address from CR3 register
 	  unsigned long frame_address = (process_mem_pool->get_frames(1)) << PHYSICAL_ADDRESS_START;             //Allocate a frame for the missing page
-	  unsigned long fault_address = read_cr2();                                                              // Read the addresss that caused page fault
+                                                       
 	  unsigned long pde = (fault_address & PDE_INDEX_MASK) >> PDE_FIELD_START;                               //Extract the PDE index
 	  unsigned long pte = (fault_address & PTE_INDEX_MASK) >> PTE_FIELD_START;                               //Extract the PTE index 
 	  bool flag = false;                                                                                     // Flag to denote new page table was create
+	  
+	  
+	  
 	  
 	  unsigned long *logical_pde = (unsigned long *)(0xFFFFF000 + (pde * 0x4));                              //Computing the logical pde                                          
 

@@ -54,7 +54,7 @@
 /* Forward declaration of class VMPool */
 /* We need this to break a circular include sequence. */
 class VMPool;
-
+bool is_legitimate(unsigned long _address);
 /*--------------------------------------------------------------------------*/
 /* DATA STRUCTURES */
 /*--------------------------------------------------------------------------*/
@@ -83,14 +83,16 @@ private:
     
     /* DATA FOR CURRENT PAGE TABLE */
     unsigned long        * page_directory;     /* where is page directory located? */
-    vmpool_node_s        * list_head;          /*List of virtual memory pools*/
-    vmpool_node_s        * list_tail;
+
     
 public:
     static const unsigned int PAGE_SIZE        = Machine::PAGE_SIZE;
     /* in bytes */
     static const unsigned int ENTRIES_PER_PAGE = Machine::PT_ENTRIES_PER_PAGE;
     /* in entries */
+    
+    vmpool_node_s        * list_head;          /*List of virtual memory pools*/
+    vmpool_node_s        * list_tail;
     
     static void init_paging(ContFramePool * _kernel_mem_pool,
                             ContFramePool * _process_mem_pool,

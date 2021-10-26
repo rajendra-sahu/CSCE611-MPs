@@ -33,6 +33,12 @@
 /* DATA STRUCTURES */
 /*--------------------------------------------------------------------------*/
 
+typedef struct region_node
+{
+       unsigned long  base_address;
+       unsigned long  size;
+} region_node_s;
+
 /* Forward declaration of class PageTable */
 /* We need this to break a circular include sequence. */
 class PageTable;
@@ -48,6 +54,11 @@ private:
    unsigned long  size;
    ContFramePool *frame_pool;
    PageTable     *page_table;
+   
+   region_node_s *allocated_list;
+   region_node_s *free_list;
+   unsigned long  no_of_allocated;
+   unsigned long  no_of_freed;
 
 public:
    VMPool(unsigned long  _base_address,
