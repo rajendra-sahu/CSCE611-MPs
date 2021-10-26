@@ -79,6 +79,20 @@ void PageTable::enable_paging()
    Console::puts("Enabled paging\n");
 }
 
+unsigned long * PageTable::PDE_address(unsigned long addr)
+{
+	unsigned long pde = (addr & PDE_INDEX_MASK) >> PDE_FIELD_START;
+	return (unsigned long *)(0xFFFFF000 + (pde * 0x4));
+	
+}
+
+unsigned long * PageTable::PTE_address(unsigned long addr)
+{
+	unsigned long pde = (addr & PDE_INDEX_MASK) >> PDE_FIELD_START;
+	unsigned long pte = (addr & PTE_INDEX_MASK) >> PTE_FIELD_START;
+	return (unsigned long *)(0xFFC00000 | (pde << PTE_FIELD_START) | (pte << 2));
+	
+}
 
 void PageTable::handle_fault(REGS * _r)
 {
@@ -112,7 +126,7 @@ void PageTable::handle_fault(REGS * _r)
   
   if((_r->err_code & 0x1) == 0x0)  //Non-present page error code only 
   {
-	  //unsigned long is of 8 bytes
+	  //unsigned long is of 8 bytes in GCC 9.3.0
 	  //unsigned long *physical_page_directory = (unsigned long *)read_cr3();                                //read page directory address from CR3 register
 	  unsigned long frame_address = (process_mem_pool->get_frames(1)) << PHYSICAL_ADDRESS_START;             //Allocate a frame for the missing page
 	  unsigned long fault_address = read_cr2();                                                              // Read the addresss that caused page fault
@@ -131,7 +145,7 @@ void PageTable::handle_fault(REGS * _r)
 
 	  //unsigned long *physical_page_table = (unsigned long *)(physical_page_directory[pde] & PHYSICAL_ADDRESS_MASK);   //Storing it in an intermediate variable
 	  
-	  unsigned long *logical_pt = (unsigned long *)(0xFFC00000 | (pde << PHYSICAL_ADDRESS_START));                     //computing the logical address of page table
+	  unsigned long *logical_pt = (unsigned long *)(0xFFC00000 | (pde << PTE_FIELD_START));                     //computing the logical address of page table
 	  
 	  
 	  if(flag)                                                                                           //If a new page table was created init the entries
@@ -174,7 +188,16 @@ void PageTable::register_pool(VMPool * _vm_pool)
     Console::puts("registered VM pool\n");
 }
 
-void PageTable::free_page(unsigned long _page_no) {
-    assert(false);
+void PageTable::free_page(unsigned long _page_no) 
+{
+    unsigned long logical_addr = _page_no << 12;
+    unsigned long *pt_entry = PTE_address(logical_addr);
+    
+    if(*pt_entry & 0x1)                                                         //Check if the page is valid
+    {
+    	ContFramePool::release_frames(*pt_entry >> PHYSICAL_ADDRESS_START);     //Releasing the frame by passing the frame number
+    	*pt_entry = *pt_entry & 0xFFFFFFFE;                                     //Marking the page invaid or non-present
+    	write_cr3((unsigned long)page_directory);                               //Flush TLB by reloading cr3 with the current value
+    }
     Console::puts("freed page\n");
 }

@@ -117,6 +117,12 @@ public:
      memory is accessed by addressing physical memory directly. After paging is
      enabled, memory is addressed logically. */
     
+    unsigned long* PDE_address(unsigned long addr);
+    /*Compute the logical address of the page directory from an entire logical address*/
+    
+    unsigned long* PTE_address(unsigned long addr);
+    /*Compute the logical address of the page table from an entire logical address*/
+    
     static void handle_fault(REGS * _r);
     /* The page fault handler. */
     
