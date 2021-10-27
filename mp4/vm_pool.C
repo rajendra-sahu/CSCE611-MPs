@@ -66,6 +66,14 @@ VMPool::VMPool(unsigned long  _base_address,
     free_list[0].size = size - 4096;
     no_of_freed = 1;
     
+    for(int i = 1; i < 256; i++)
+    {
+    	allocated_list[i].base_address = 0;
+    	allocated_list[i].size = 0;
+    	free_list[i].base_address = 0;
+    	free_list[i].size = 0;
+    }
+    
     Console::puts("Constructed VMPool object.\n");
 }
 
@@ -95,7 +103,7 @@ unsigned long VMPool::allocate(unsigned long _size)
 	    free_list[free_index].size = free_list[free_index].size - _size;
 	   
 	    Console::puts("Allocated region of memory.\n");
-	    return allocated_list[no_of_allocated].base_address;
+	    return allocated_list[no_of_allocated - 1].base_address;
     }
     else
     {
