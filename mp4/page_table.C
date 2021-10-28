@@ -239,8 +239,8 @@ void PageTable::register_pool(VMPool * _vm_pool)
 
 void PageTable::free_page(unsigned long _page_no) 
 {
-    unsigned long logical_addr = _page_no << 12;
-    unsigned long *pt_entry = PTE_address(logical_addr);
+    //unsigned long logical_addr = _page_no << 12;
+    unsigned long *pt_entry = PTE_address(_page_no);
     
     if(*pt_entry & 0x1)                                                         //Check if the page is valid
     {
