@@ -9,20 +9,6 @@ unsigned int PageTable::paging_enabled = 0;
 ContFramePool * PageTable::kernel_mem_pool = NULL;
 ContFramePool * PageTable::process_mem_pool = NULL;
 unsigned long PageTable::shared_size = 0;
-//vmpool_node_s * PageTable::list_head = NULL;
-
-/*bool VMPool::is_legitimate(unsigned long _address)
- {
-    if((base_address <= _address) && (_address < (base_address + size)))
-    {
-    	return true;
-    }
-    else
-    {
-    	return false;
-    }
-    Console::puts("Checked whether address is part of an allocated region.\n");
-}*/
 
 void PageTable::init_paging(ContFramePool * _kernel_mem_pool,
                             ContFramePool * _process_mem_pool,
@@ -67,8 +53,10 @@ PageTable::PageTable()
 	page_directory[i] = 0 | S_W_NP;                                                                      // attribute set to: supervisor level, read/write, not present(010 in binary)
    }
    
-   list_head = NULL;
-   list_tail = NULL;
+   //list_head = NULL;
+   //list_tail = NULL;
+   vmpool_list = NULL;
+   vmpool_list_count = 0;
 
    Console::puts("Constructed Page Table object\n");
 }
@@ -146,7 +134,7 @@ void PageTable::handle_fault(REGS * _r)
 	  /*Checking the legitimacy of address by calling is_legitimate on every registered pool*/
 	  bool legitimacy_flag = false;
 	  
-	  vmpool_node_s * temp_list =  PageTable::current_page_table->list_head;
+	  /*vmpool_node_s * temp_list =  PageTable::current_page_table->list_head;
 	  while(temp_list)
 	  {
 	  	legitimacy_flag = temp_list->pool->is_legitimate(fault_address);       //call is_legitimate on each registered pool
@@ -155,6 +143,15 @@ void PageTable::handle_fault(REGS * _r)
 	  		break;
 	  	}
 	  	temp_list = PageTable::current_page_table->list_head->next;
+	  }*/
+	  
+	  for(unsigned long i = 0; i < PageTable::current_page_table->vmpool_list_count; i++)
+	  {
+	  	legitimacy_flag = PageTable::current_page_table->vmpool_list[i]->is_legitimate(fault_address);       //find out legitimacy on each registered pool
+	  	if(legitimacy_flag == true)
+	  	{
+	  		break;
+	  	}
 	  }
 	  if(!legitimacy_flag)
 	  {
@@ -211,7 +208,7 @@ void PageTable::handle_fault(REGS * _r)
 
 void PageTable::register_pool(VMPool * _vm_pool)
 {
-    if(list_head == NULL)
+    /*if(list_head == NULL)
     {
     	list_head->pool = _vm_pool;
     	list_head->next = NULL;
@@ -226,7 +223,17 @@ void PageTable::register_pool(VMPool * _vm_pool)
     	list_tail->next = temp;
     	list_tail = temp;
     	
+    }*/
+    
+    if((vmpool_list[0] == NULL) && (vmpool_list_count !=0))
+    {
+  	Console::puts("VM pool list invalid\n");
+  	assert(false);
     }
+    
+    vmpool_list[vmpool_list_count] = _vm_pool;
+    vmpool_list_count++;
+    
     Console::puts("registered VM pool\n");
 }
 

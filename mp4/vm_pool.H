@@ -59,6 +59,7 @@ private:
    region_node_s *free_list;
    unsigned long  no_of_allocated;
    unsigned long  no_of_freed;
+   bool           lists_initialized;
 
 public:
    VMPool(unsigned long  _base_address,

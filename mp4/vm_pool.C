@@ -52,11 +52,20 @@ VMPool::VMPool(unsigned long  _base_address,
     size = _size;
     frame_pool = _frame_pool;
     page_table = _page_table;
+    lists_initialized = false;
+    
+    if(size < 4096)
+    {
+    	Console::puts("VM pool size less than a page ; can't store the lists.\n");
+    	assert(false);
+    }
     
     page_table->register_pool(this);                                 //registering the new vm pool
     
-    allocated_list = (region_node_s *)allocate(4096);                //allocating a full page ; first half for allocated_list
-    free_list = allocated_list + 256;                                //second half for free_list
+    //allocated_list = (region_node_s *)allocate(4096);                //allocating a full page ; first half for allocated_list
+    allocated_list = (region_node_s *)(base_address);
+    free_list = (region_node_s *)(allocated_list + 256);                                //second half for free_list
+    
     
     allocated_list[0].base_address = base_address;
     allocated_list[0].size = 4096;
@@ -74,11 +83,17 @@ VMPool::VMPool(unsigned long  _base_address,
     	free_list[i].size = 0;
     }
     
+   lists_initialized = true;
+    
     Console::puts("Constructed VMPool object.\n");
 }
 
 unsigned long VMPool::allocate(unsigned long _size) 
 {
+    /*if(lists_initialized == false)
+    {
+    	return base_address;
+    }*/
     unsigned long free_index;
     bool allocation_flag = false;
     for(unsigned long i = 0; i< no_of_freed; i++)
@@ -114,7 +129,7 @@ unsigned long VMPool::allocate(unsigned long _size)
 
 void VMPool::release(unsigned long _start_address) 
 {
-    
+    /*TODO Put a no memory to release check */
     unsigned long allocated_index;
     for(unsigned long i = 0; i<no_of_allocated; i++)
     {
@@ -149,7 +164,12 @@ void VMPool::release(unsigned long _start_address)
 
 bool VMPool::is_legitimate(unsigned long _address)
  {
-    Console::puts("Checking whether address is part of an allocated region.\n");
+    //Console::puts("Checking whether address is part of an allocated region.\n");
+    
+    if(lists_initialized == false)
+    {
+    	return true;
+    }
     
     for(unsigned long i = 0; i<no_of_allocated; i++)
     {
@@ -158,7 +178,6 @@ bool VMPool::is_legitimate(unsigned long _address)
     		return true;
     	}
     }
-
     return false;
     
 }
