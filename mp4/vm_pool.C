@@ -97,17 +97,17 @@ unsigned long VMPool::allocate(unsigned long _size)
 {
     unsigned long free_index;
     bool allocation_flag = false;
-    for(unsigned long i = 0; i< no_of_freed; i++)
+    for(unsigned long i = 0; i< no_of_freed; i++)                   //Traverse through the free list if _size of memeory can be allocated 
     {
     	if(_size <= free_list[i].size)
     	{
-    		free_index = i;
-    		allocation_flag = true;
+    		free_index = i;                                      //Found a region where the specified memeory can be allocated
+    		allocation_flag = true;                                
     		break;
     	}
     }
     
-    if(allocation_flag)
+    if(allocation_flag)                                              // Moving an entry from free list to allocated list
     {
 	    //Creating new allocated list entry
 	    allocated_list[no_of_allocated].base_address = free_list[free_index].base_address;
@@ -130,18 +130,25 @@ unsigned long VMPool::allocate(unsigned long _size)
 
 void VMPool::release(unsigned long _start_address) 
 {
-    /*TODO Put a no memory to release check */
     unsigned long allocated_index;
-    for(unsigned long i = 0; i<no_of_allocated; i++)
+    bool region_found = false;
+    for(unsigned long i = 0; i<no_of_allocated; i++)                    //Traverse through the allocated list to find out if such a memory region exists or not.
     {
     	if(allocated_list[i].base_address == _start_address)
     	{	
-    		allocated_index = i;
+    		allocated_index = i;                                    //Found the memory region
+    		region_found = true;
     		break;
     	}
     }
     
-    if(allocated_list[allocated_index].size == 0)
+    if(region_found == false )                                      //Didn't find the region
+    {
+    	Console::puts("No such allocated region.\n");
+    	assert(false);
+    }
+    
+    if(allocated_list[allocated_index].size == 0)                        //The free region size is zero
     {
     	Console::puts("Allocated memory region not valid.\n");
     	assert(false);
@@ -165,9 +172,9 @@ void VMPool::release(unsigned long _start_address)
 
 bool VMPool::is_legitimate(unsigned long _address)
  {
-    //Console::puts("Checking whether address is part of an allocated region.\n");
+    Console::puts("Checking whether address is part of an allocated region.\n");
     
-    if((allocated_list_first_entry_set == true) && (no_of_allocated == 0))                       //Only passing true for legitimacy check if it's the first entry memory access
+    if((allocated_list_first_entry_set == true) && (no_of_allocated == 0))                       //Only passing true legitimacy check if it's the first entry memory access
     {
     	return true;
     }

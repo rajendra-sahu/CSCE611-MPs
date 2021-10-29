@@ -199,7 +199,7 @@ void PageTable::register_pool(VMPool * _vm_pool)
   	assert(false);
     }
     
-    vmpool_list[vmpool_list_count] = _vm_pool;
+    vmpool_list[vmpool_list_count] = _vm_pool;                    //Add an entry
     vmpool_list_count++;
     
     Console::puts("registered VM pool\n");
