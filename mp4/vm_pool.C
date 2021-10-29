@@ -52,7 +52,7 @@ VMPool::VMPool(unsigned long  _base_address,
     size = _size;
     frame_pool = _frame_pool;
     page_table = _page_table;
-    lists_initialized = false;
+    allocated_list_first_entry_set = false;
     
     if(size < 4096)
     {
@@ -62,20 +62,25 @@ VMPool::VMPool(unsigned long  _base_address,
     
     page_table->register_pool(this);                                 //registering the new vm pool
     
-    //allocated_list = (region_node_s *)allocate(4096);                //allocating a full page ; first half for allocated_list
-    allocated_list = (region_node_s *)(base_address);
-    free_list = (region_node_s *)(allocated_list + 256);                                //second half for free_list
+    /*Avoiding the allocate() call since it's a bad practise, alhtough it could have been handled by lists_initialized flag*/           
+    allocated_list = (region_node_s *)(base_address);                //Explicitly making it to point to the base_address of the vm pool since allocate() is not ready yet
+    free_list = (region_node_s *)(allocated_list + 256);             // Max 256 entries in each list ; 4096 / 8 / 2                  
     
     
-    allocated_list[0].base_address = base_address;
-    allocated_list[0].size = 4096;
-    no_of_allocated = 1;
+    /*The following memory references will trigger page faults since they haven't been allocated actual frames.
+      It is handled by returning true setting a flag true and chekcing it in the legitimacy fn and the reseting the flag immediately once the lists have been initialised*/
+    allocated_list_first_entry_set = true;                                             //Setting the flag true ; to be used by is_legitimate() for just the first entry                   
+    allocated_list[0].base_address = base_address;                                     //Set the first allocated region entry
+    allocated_list[0].size = 4096;                                                     //allocating a full page ; first half for allocated_list; second half for free_list
     
-    free_list[0].base_address = base_address + 4096;
-    free_list[0].size = size - 4096;
-    no_of_freed = 1;
+    free_list[0].base_address = base_address + 4096;                                   //Set the first free region entry
+    free_list[0].size = size - 4096;                                                   // we keep spliting the free regions to allocate region
     
-    for(int i = 1; i < 256; i++)
+    allocated_list_first_entry_set = false;
+    no_of_allocated++;
+    no_of_freed++;
+    
+    for(int i = 1; i < 256; i++)                                                       //Set the other entries as invalid i.e. address & size = 0
     {
     	allocated_list[i].base_address = 0;
     	allocated_list[i].size = 0;
@@ -83,17 +88,13 @@ VMPool::VMPool(unsigned long  _base_address,
     	free_list[i].size = 0;
     }
     
-   lists_initialized = true;
+   
     
     Console::puts("Constructed VMPool object.\n");
 }
 
 unsigned long VMPool::allocate(unsigned long _size) 
 {
-    /*if(lists_initialized == false)
-    {
-    	return base_address;
-    }*/
     unsigned long free_index;
     bool allocation_flag = false;
     for(unsigned long i = 0; i< no_of_freed; i++)
@@ -166,12 +167,12 @@ bool VMPool::is_legitimate(unsigned long _address)
  {
     //Console::puts("Checking whether address is part of an allocated region.\n");
     
-    if(lists_initialized == false)
+    if((allocated_list_first_entry_set == true) && (no_of_allocated == 0))                       //Only passing true for legitimacy check if it's the first entry memory access
     {
     	return true;
     }
     
-    for(unsigned long i = 0; i<no_of_allocated; i++)
+    for(unsigned long i = 0; i<no_of_allocated; i++)                                            //Check all the allocated memory regions
     {
     	if((allocated_list[i].base_address <= _address) && (_address < (allocated_list[i].base_address + allocated_list[i].size)))
     	{
