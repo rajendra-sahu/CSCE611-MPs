@@ -59,12 +59,6 @@ bool is_legitimate(unsigned long _address);
 /* DATA STRUCTURES */
 /*--------------------------------------------------------------------------*/
 
-/*typedef struct vmpool_node_
-{
-	VMPool* pool;
-	struct vmpool_node_* next;
-} vmpool_node_s;*/
-
 /*--------------------------------------------------------------------------*/
 /* P A G E - T A B L E  */
 /*--------------------------------------------------------------------------*/
@@ -91,10 +85,8 @@ public:
     static const unsigned int ENTRIES_PER_PAGE = Machine::PT_ENTRIES_PER_PAGE;
     /* in entries */
     
-    //vmpool_node_s        * list_head;          /*List of virtual memory pools*/
-    //vmpool_node_s        * list_tail;
-    VMPool**               vmpool_list;
-    unsigned long          vmpool_list_count;
+    VMPool**               vmpool_list;           //List of virtual memory pools
+    unsigned long          vmpool_list_count;     //The count of registered pools
     
     static void init_paging(ContFramePool * _kernel_mem_pool,
                             ContFramePool * _process_mem_pool,

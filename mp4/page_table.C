@@ -80,20 +80,24 @@ void PageTable::enable_paging()
    Console::puts("Enabled paging\n");
 }
 
+/*Recursive lookup computation functions*/
+
 unsigned long * PageTable::PDE_address(unsigned long addr)
 {
-	unsigned long pde = (addr & PDE_INDEX_MASK) >> PDE_FIELD_START;
-	return (unsigned long *)(0xFFFFF000 + (pde * 0x4));
+	unsigned long pde_index = (addr & PDE_INDEX_MASK) >> PDE_FIELD_START;
+	return (unsigned long *)(0xFFFFF000 + (pde_index * 0x4));
 	
 }
 
 unsigned long * PageTable::PTE_address(unsigned long addr)
 {
-	unsigned long pde = (addr & PDE_INDEX_MASK) >> PDE_FIELD_START;
-	unsigned long pte = (addr & PTE_INDEX_MASK) >> PTE_FIELD_START;
-	return (unsigned long *)(0xFFC00000 | (pde << PTE_FIELD_START) | (pte << 2));
+	unsigned long pde_index = (addr & PDE_INDEX_MASK) >> PDE_FIELD_START;
+	unsigned long pte_index = (addr & PTE_INDEX_MASK) >> PTE_FIELD_START;
+	return (unsigned long *)(0xFFC00000 | (pde_index << PTE_FIELD_START) | (pte_index << 2));
 	
 }
+
+/*Recursive lookup computation functions*/
 
 void PageTable::handle_fault(REGS * _r)
 {
@@ -131,19 +135,11 @@ void PageTable::handle_fault(REGS * _r)
 	  
 	  unsigned long fault_address = read_cr2();                                                       // Read the addresss that caused page fault
 	  
-	  /*Checking the legitimacy of address by calling is_legitimate on every registered pool*/
-	  bool legitimacy_flag = false;
 	  
-	  /*vmpool_node_s * temp_list =  PageTable::current_page_table->list_head;
-	  while(temp_list)
-	  {
-	  	legitimacy_flag = temp_list->pool->is_legitimate(fault_address);       //call is_legitimate on each registered pool
-	  	if(legitimacy_flag == true)
-	  	{
-	  		break;
-	  	}
-	  	temp_list = PageTable::current_page_table->list_head->next;
-	  }*/
+	  #ifndef _TEST_PAGE_TABLE_
+	  
+	  /*Checking the legitimacy of address by calling is_legitimate on every registered pool*/
+	  bool legitimacy_flag = false;  
 	  
 	  for(unsigned long i = 0; i < PageTable::current_page_table->vmpool_list_count; i++)
 	  {
@@ -159,32 +155,29 @@ void PageTable::handle_fault(REGS * _r)
   		assert(false);
 	  }
 	  
+	  #endif
 	  
 	  /*Proceeding with the exception handler*/
 	  
-	  
-	  //unsigned long *physical_page_directory = (unsigned long *)read_cr3();                                //read page directory address from CR3 register
 	  unsigned long frame_address = (process_mem_pool->get_frames(1)) << PHYSICAL_ADDRESS_START;             //Allocate a frame for the missing page
                                                        
-	  unsigned long pde = (fault_address & PDE_INDEX_MASK) >> PDE_FIELD_START;                               //Extract the PDE index
-	  unsigned long pte = (fault_address & PTE_INDEX_MASK) >> PTE_FIELD_START;                               //Extract the PTE index 
+	  unsigned long pde_index = (fault_address & PDE_INDEX_MASK) >> PDE_FIELD_START;                               //Extract the PDE index
+	  unsigned long pte_index = (fault_address & PTE_INDEX_MASK) >> PTE_FIELD_START;                               //Extract the PTE index 
 	  bool flag = false;                                                                                     // Flag to denote new page table was create
 	  
 	  
 	  
 	  
-	  unsigned long *logical_pde = (unsigned long *)(0xFFFFF000 + (pde * 0x4));                              //Computing the logical pde                                          
+	  unsigned long *pde = PageTable::current_page_table->PDE_address(fault_address);                //Computing the logical pde                                          
 
-	  if((*logical_pde & 0x1) != 0x1)                                                        //PDE is not valid
+	  if((*pde & 0x1) != 0x1)                                                        //PDE is not valid
 	  {
-		*logical_pde = (process_mem_pool->get_frames(1) << PHYSICAL_ADDRESS_START);       //Allocating frame for a new page table
-		*logical_pde = *logical_pde | S_W_P;                                              // attribute set to: supervisor level, read/write, present(011 in binary) 
+		*pde = (process_mem_pool->get_frames(1) << PHYSICAL_ADDRESS_START);       //Allocating frame for a new page table
+		*pde = *pde | S_W_P;                                              // attribute set to: supervisor level, read/write, present(011 in binary) 
 		flag = true;
 	  }
-
-	  //unsigned long *physical_page_table = (unsigned long *)(physical_page_directory[pde] & PHYSICAL_ADDRESS_MASK);   //Storing it in an intermediate variable
 	  
-	  unsigned long *logical_pt = (unsigned long *)(0xFFC00000 | (pde << PTE_FIELD_START));                     //computing the logical address of page table
+	  unsigned long *logical_pt = (unsigned long *)(0xFFC00000 | (pde_index << PTE_FIELD_START));                     //computing the logical address of page table
 	  
 	  
 	  if(flag)                                                                                           //If a new page table was created init the entries
@@ -194,7 +187,7 @@ void PageTable::handle_fault(REGS * _r)
 			*(logical_pt + i) = 0 | S_W_NP;                                                          // attribute set to: supervisor level, read/write, not present(010 in binary)
 		  } 
 	  }             
-	  *(logical_pt + pte) = frame_address | S_W_P;                                                           //Set the PTE entry to point to the actual physical frame
+	  *(logical_pt + pte_index) = frame_address | S_W_P;                                                           //Set the PTE entry to point to the actual physical frame
 	                                                                                                     // attribute set to: supervisor level, read/write, present(011 in binary)
   } 
   else
@@ -208,22 +201,6 @@ void PageTable::handle_fault(REGS * _r)
 
 void PageTable::register_pool(VMPool * _vm_pool)
 {
-    /*if(list_head == NULL)
-    {
-    	list_head->pool = _vm_pool;
-    	list_head->next = NULL;
-    	list_tail->pool = _vm_pool;
-    	list_tail->next = NULL;
-    }
-    else
-    {
-    	vmpool_node_s *temp;
-    	temp->pool = _vm_pool;
-    	temp->next = NULL;
-    	list_tail->next = temp;
-    	list_tail = temp;
-    	
-    }*/
     
     if((vmpool_list[0] == NULL) && (vmpool_list_count !=0))
     {
@@ -239,7 +216,7 @@ void PageTable::register_pool(VMPool * _vm_pool)
 
 void PageTable::free_page(unsigned long _page_no) 
 {
-    //unsigned long logical_addr = _page_no << 12;
+    //The parameter _page_no is the logical address itself; use the value directly
     unsigned long *pt_entry = PTE_address(_page_no);
     
     if(*pt_entry & 0x1)                                                         //Check if the page is valid
