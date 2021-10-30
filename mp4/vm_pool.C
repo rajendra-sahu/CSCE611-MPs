@@ -80,6 +80,7 @@ VMPool::VMPool(unsigned long  _base_address,
     no_of_allocated++;
     no_of_freed++;
     
+    /*Since the previous memeory reference will trigger the frame allcoation and create a page table mapping; it wont page fault in the following memeory reference */
     for(int i = 1; i < 256; i++)                                                       //Set the other entries as invalid i.e. address & size = 0
     {
     	allocated_list[i].base_address = 0;
