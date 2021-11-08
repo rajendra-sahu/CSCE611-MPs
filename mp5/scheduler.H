@@ -115,10 +115,6 @@ class FIFOScheduler : public Scheduler{
 
   /* The scheduler may need private members... */
   
-protected:
-  //head & tail of the ready queue
-  tcb_node* head;
-  tcb_node* tail;
   
 public:
 

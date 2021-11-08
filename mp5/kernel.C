@@ -103,7 +103,7 @@ void operator delete[] (void * p) {
 #ifdef _USES_SCHEDULER_
 
 /* -- A POINTER TO THE SYSTEM SCHEDULER */
-FIFOScheduler * SYSTEM_SCHEDULER;
+Scheduler * SYSTEM_SCHEDULER;
 
 
 #endif
