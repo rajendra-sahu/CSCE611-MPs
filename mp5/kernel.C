@@ -23,7 +23,7 @@
 
 /* -- COMMENT/UNCOMMENT THE FOLLOWING LINE TO EXCLUDE/INCLUDE SCHEDULER CODE */
 
-//#define _USES_SCHEDULER_
+#define _USES_SCHEDULER_
 /* This macro is defined when we want to force the code below to use
    a scheduler.
    Otherwise, no scheduler is used, and the threads pass control to each
@@ -103,7 +103,8 @@ void operator delete[] (void * p) {
 #ifdef _USES_SCHEDULER_
 
 /* -- A POINTER TO THE SYSTEM SCHEDULER */
-Scheduler * SYSTEM_SCHEDULER;
+FIFOScheduler * SYSTEM_SCHEDULER;
+
 
 #endif
 
@@ -135,6 +136,8 @@ Thread * thread1;
 Thread * thread2;
 Thread * thread3;
 Thread * thread4;
+
+//Call add() to add the threads to the scheduler's ready queue
 
 /* -- THE 4 FUNCTIONS fun1 - fun4 ARE LARGELY IDENTICAL. */
 
@@ -213,6 +216,8 @@ int main() {
     ExceptionHandler::init_dispatcher();
     IRQ::init();
     InterruptHandler::init_dispatcher();
+    
+    //Console::output_redirection(true);
 
     /* -- EXAMPLE OF AN EXCEPTION HANDLER -- */
 
@@ -256,7 +261,7 @@ int main() {
 
     /* -- SCHEDULER -- IF YOU HAVE ONE -- */
  
-    SYSTEM_SCHEDULER = new Scheduler();
+    SYSTEM_SCHEDULER = new FIFOScheduler();
 
 #endif
 

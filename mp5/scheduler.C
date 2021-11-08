@@ -45,23 +45,97 @@
 /* METHODS FOR CLASS   S c h e d u l e r  */
 /*--------------------------------------------------------------------------*/
 
-Scheduler::Scheduler() {
-  assert(false);
+Scheduler::Scheduler() 
+{
+  //assert(false);
+  
+  head = NULL;
+  tail = NULL;
   Console::puts("Constructed Scheduler.\n");
 }
 
 void Scheduler::yield() {
-  assert(false);
+  //assert(false);
+  Console::puts("In base Scheduler's yield();  no actual implementation.\n");
 }
 
 void Scheduler::resume(Thread * _thread) {
-  assert(false);
+  //assert(false);
+  Console::puts("In base Scheduler's resume(); no actual implementation.\n");
 }
 
-void Scheduler::add(Thread * _thread) {
-  assert(false);
+void Scheduler::add(Thread * _thread) 
+{
+  //assert(false);
+  tcb_node* node;
+  node->thread = _thread;
+  node->next = NULL;
+  if(head == NULL && tail == NULL)
+  {
+  	head = node;
+  	tail = node;
+  }
+  else
+  {
+  	tail->next = node;
+  	tail = node;
+  }
+  
+  Console::puts("In non virtual add().\n");
+  Console::puts("Added thread to the ready queue.\n");
 }
 
 void Scheduler::terminate(Thread * _thread) {
+  assert(false);
+}
+
+/*--------------------------------------------------------------------------*/
+/* METHODS FOR CLASS   F I F O S c h e d u l e r  */
+/*--------------------------------------------------------------------------*/
+FIFOScheduler::FIFOScheduler() 
+{
+  //assert(false);
+  
+  //head = NULL;
+  //tail = NULL;
+  Console::puts("Scheduler already constructed in Base Class.\n");
+}
+
+void FIFOScheduler::yield() {
+  //assert(false);
+  //add(head->thread);
+  //Current thread i.e. head has been added to the ready queue by the resume() call; now time to update the head to the next thread in queue & dispath that thread.
+  head = head->next;
+  Thread::dispatch_to(head->thread);
+  Console::puts("In derived FIFOscheduler  yield()'s actual implementation.\n");
+}
+
+void FIFOScheduler::resume(Thread * _thread) {
+  //assert(false);
+  add(_thread);
+  Console::puts("In derived FIFOscheduler resume()'s actual implementation.\n");
+}
+
+/*void Scheduler::add(Thread * _thread) 
+{
+  //assert(false);
+  tcb_node* node;
+  node->thread = _thread;
+  node->next = NULL;
+  if(head == NULL && tail == NULL)
+  {
+  	head = node;
+  	tail = node;
+  }
+  else
+  {
+  	tail->next = node;
+  	tail = node;
+  }
+  
+  Console::puts("Added thread to the ready queue.\n");
+}*/
+
+void FIFOScheduler::terminate(Thread * _thread) {
   assert(false);
 }
