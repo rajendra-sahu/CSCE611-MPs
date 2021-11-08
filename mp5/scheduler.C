@@ -104,9 +104,10 @@ FIFOScheduler::FIFOScheduler()
 void FIFOScheduler::yield() {
   //assert(false);
   //add(head->thread);
-  //Current thread i.e. head has been added to the ready queue by the resume() call; now time to update the head to the next thread in queue & dispath that thread.
+  //Current running thread has been added to the ready queue by the resume() call; now time to pop the head thread in queue & dispatch that node.
+  tcb_node* node = head;
   head = head->next;
-  Thread::dispatch_to(head->thread);
+  Thread::dispatch_to(node->thread);
   Console::puts("In derived FIFOscheduler  yield()'s actual implementation.\n");
 }
 

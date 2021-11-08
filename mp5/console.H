@@ -76,17 +76,21 @@ private:
   static int csr_x;                   /* position of cursor              */
   static int csr_y;
   static unsigned short * textmemptr; /* text pointer */
+  static bool redirect_output;        /* redirect output to stdout in console? */
+
+  static void scroll();
+
+  static void move_cursor();
+  /* Update the hardware cursor. */
+
 public:
   
   /* -- INITIALIZER (we have no constructor, there is no memory mgmt yet.) */
   static void init(unsigned char _fore_color = WHITE, 
                    unsigned char _back_color = BLACK);
   
-  static void scroll();
-
-  static void move_cursor();
-  /* Update the hardware cursor. */
-
+  static void output_redirection(bool _on_off);
+  
   static void cls();
   /* Clear the screen. */
 

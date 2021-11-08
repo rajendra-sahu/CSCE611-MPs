@@ -5,6 +5,8 @@
             Department of Computer Science
             Texas A&M University
     Date  : 09/02/2009
+    
+    Revised: 09/28/2021: Added redirection to stdout in console.
 
 */
 
@@ -51,7 +53,8 @@
  int Console::csr_x;                   /* position of cursor              */
  int Console::csr_y;
  unsigned short * Console::textmemptr; /* text pointer */
-
+ bool Console::redirect_output = false;
+ 
 /* -- CONSTRUCTOR -- */
 
 void Console::init(unsigned char _fore_color,
@@ -63,6 +66,9 @@ void Console::init(unsigned char _fore_color,
     cls();
 }
 
+void Console::output_redirection(bool _on_off) {
+    redirect_output = _on_off;
+}
 
 void Console::scroll() {
 
@@ -145,6 +151,9 @@ void Console::putch(const char _c){
     else if(_c == '\r')
     {
         csr_x = 0;
+        if (redirect_output) {
+            Machine::outportb(0xe9, _c);
+        }
     }
     /* We handle our newlines the way DOS and the BIOS do: we
     *  treat it as if a 'CR' was also there, so we bring the
@@ -153,6 +162,9 @@ void Console::putch(const char _c){
     {
         csr_x = 0;
         csr_y++;
+        if (redirect_output) {
+            Machine::outportb(0xe9, _c);
+        }
     }
     /* Any character greater than and including a space, is a
     *  printable character. The equation for finding the index
@@ -163,6 +175,9 @@ void Console::putch(const char _c){
         unsigned short * where = textmemptr + (csr_y * 80 + csr_x);
         *where = _c | (attrib << 8);	/* Character AND attributes: color */
         csr_x++;
+        if (redirect_output) {
+            Machine::outportb(0xe9, _c);
+        }
     }
 
     /* If the cursor has reached the edge of the screen's width, we

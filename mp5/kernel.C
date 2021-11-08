@@ -217,7 +217,7 @@ int main() {
     IRQ::init();
     InterruptHandler::init_dispatcher();
     
-    //Console::output_redirection(true);
+    Console::output_redirection(true);
 
     /* -- EXAMPLE OF AN EXCEPTION HANDLER -- */
 
@@ -303,6 +303,7 @@ int main() {
 #ifdef _USES_SCHEDULER_
 
     /* WE ADD thread2 - thread4 TO THE READY QUEUE OF THE SCHEDULER. */
+    /*Assumption that the current running thread is not at the head of the queue ; while scheduling it should dispatch the head node which is the next thread in the queue*/ 
 
     SYSTEM_SCHEDULER->add(thread2);
     SYSTEM_SCHEDULER->add(thread3);
