@@ -82,6 +82,7 @@ void Scheduler::add(Thread * _thread)
   }
   
   Console::puts("In non virtual add().\n");
+  Console::puts("Adding Thread: "); Console::puti(node->thread->ThreadId()); Console::puts("\n");
   Console::puts("Added thread to the ready queue.\n");
 }
 
@@ -107,6 +108,7 @@ void FIFOScheduler::yield() {
   //Current running thread has been added to the ready queue by the resume() call; now time to pop the head thread in queue & dispatch that node.
   tcb_node* node = head;
   head = head->next;
+  Console::puts("Dispatching Thread: "); Console::puti(node->thread->ThreadId()); Console::puts("\n");
   Thread::dispatch_to(node->thread);
   Console::puts("In derived FIFOscheduler  yield()'s actual implementation.\n");
 }
