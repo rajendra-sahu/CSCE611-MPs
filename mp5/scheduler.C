@@ -67,7 +67,6 @@ void Scheduler::resume(Thread * _thread) {
 
 void Scheduler::add(Thread * _thread) 
 {
-  //assert(false);
   tcb_node* node = (tcb_node*) new char[sizeof(tcb_node)];
   node->thread = _thread;
   node->next = NULL;
@@ -105,15 +104,25 @@ void FIFOScheduler::yield() {
   //assert(false);
   //Current running thread has been added to the ready queue by the resume() call; now time to pop the head thread in queue & dispatch that node.
   tcb_node* node = head;
+  if(head == NULL)
+  {
+  	Console::puts("No ready thread to yield\n");
+  	assert(false);
+  }
+  if(head->next == NULL)
+  {
+  	Console::puts("Ready queue is empty now; Threading must terminate after this last thread\n");
+  }
   head = head->next;
   Console::puts("Dispatching Thread: "); Console::puti(node->thread->ThreadId()); Console::puts("\n");
   Thread::dispatch_to(node->thread);
-  delete ((void *)node);
+  delete []node;
   Console::puts("In derived FIFOscheduler  yield()'s actual implementation.\n");
 }
 
-void FIFOScheduler::resume(Thread * _thread) {
-  //assert(false);
+void FIFOScheduler::resume(Thread * _thread) 
+{
+  //Resuming means adding thread to ready queue
   add(_thread);
   Console::puts("In derived FIFOscheduler resume()'s actual implementation.\n");
 }
