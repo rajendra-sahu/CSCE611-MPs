@@ -87,7 +87,8 @@ void Scheduler::add(Thread * _thread)
 }
 
 void Scheduler::terminate(Thread * _thread) {
-  assert(false);
+  //assert(false);
+  Console::puts("In base Scheduler's terminate(); no actual implementation.\n");
 }
 
 /*--------------------------------------------------------------------------*/
@@ -127,26 +128,10 @@ void FIFOScheduler::resume(Thread * _thread)
   Console::puts("In derived FIFOscheduler resume()'s actual implementation.\n");
 }
 
-/*void Scheduler::add(Thread * _thread) 
-{
-  //assert(false);
-  tcb_node* node;
-  node->thread = _thread;
-  node->next = NULL;
-  if(head == NULL && tail == NULL)
-  {
-  	head = node;
-  	tail = node;
-  }
-  else
-  {
-  	tail->next = node;
-  	tail = node;
-  }
-  
-  Console::puts("Added thread to the ready queue.\n");
-}*/
 
-void FIFOScheduler::terminate(Thread * _thread) {
-  assert(false);
+void FIFOScheduler::terminate(Thread * _thread)
+{
+
+	Console::puts("In derived FIFOscheduler's terminate()\n");
+	Console::puts("Terminating Thread: "); Console::puti(_thread->ThreadId()); Console::puts("\n");
 }
