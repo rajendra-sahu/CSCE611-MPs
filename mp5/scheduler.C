@@ -51,6 +51,7 @@ Scheduler::Scheduler()
   
   head = NULL;
   tail = NULL;
+    
   Console::puts("Constructed Scheduler.\n");
 }
 
@@ -67,7 +68,7 @@ void Scheduler::resume(Thread * _thread) {
 void Scheduler::add(Thread * _thread) 
 {
   //assert(false);
-  tcb_node* node;
+  tcb_node* node = (tcb_node*) new char[sizeof(tcb_node)];
   node->thread = _thread;
   node->next = NULL;
   if(head == NULL && tail == NULL)
@@ -97,19 +98,17 @@ FIFOScheduler::FIFOScheduler()
 {
   //assert(false);
   
-  //head = NULL;
-  //tail = NULL;
   Console::puts("Scheduler already constructed in Base Class.\n");
 }
 
 void FIFOScheduler::yield() {
   //assert(false);
-  //add(head->thread);
   //Current running thread has been added to the ready queue by the resume() call; now time to pop the head thread in queue & dispatch that node.
   tcb_node* node = head;
   head = head->next;
   Console::puts("Dispatching Thread: "); Console::puti(node->thread->ThreadId()); Console::puts("\n");
   Thread::dispatch_to(node->thread);
+  delete ((void *)node);
   Console::puts("In derived FIFOscheduler  yield()'s actual implementation.\n");
 }
 
