@@ -299,6 +299,8 @@ int main() {
     char * stack4 = new char[1024];
     thread4 = new Thread(fun4, stack4, 1024);
     Console::puts("DONE\n");
+    
+    
 
 #ifdef _USES_SCHEDULER_
 
@@ -310,7 +312,8 @@ int main() {
     SYSTEM_SCHEDULER->add(thread4);
 
 #endif
-
+    
+    
     /* -- KICK-OFF THREAD1 ... */
 
     Console::puts("STARTING THREAD 1 ...\n");

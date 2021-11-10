@@ -70,6 +70,11 @@ void Scheduler::add(Thread * _thread)
   tcb_node* node = (tcb_node*) new char[sizeof(tcb_node)];
   node->thread = _thread;
   node->next = NULL;
+  
+  /*Keeping enqueuing critical; hence disable & enable interrupts*/
+  Console::puts("Critical Section Adding: Disable & Enable Interrupts\n");
+  Machine::disable_interrupts();
+  
   if(head == NULL && tail == NULL)
   {
   	head = node;
@@ -81,6 +86,8 @@ void Scheduler::add(Thread * _thread)
   	tail = node;
   }
   
+  Machine::enable_interrupts();
+    
   Console::puts("In non virtual add().\n");
   Console::puts("Adding Thread: "); Console::puti(node->thread->ThreadId()); Console::puts("\n");
   Console::puts("Added thread to the ready queue.\n");
@@ -104,6 +111,11 @@ FIFOScheduler::FIFOScheduler()
 void FIFOScheduler::yield() {
   //assert(false);
   //Current running thread has been added to the ready queue by the resume() call; now time to pop the head thread in queue & dispatch that node.
+  
+  /*Keeping cpu yield/dequeueing critical; hence disable & enable interrupts*/
+  Console::puts("Critical Section Yielding: Disable & Enable Interrupts\n");
+  Machine::disable_interrupts();
+  
   tcb_node* node = head;
   if(head == NULL)
   {
@@ -115,6 +127,9 @@ void FIFOScheduler::yield() {
   	Console::puts("Ready queue is empty now; Threading must terminate after this last thread\n");
   }
   head = head->next;
+  
+  Machine::enable_interrupts();
+  
   Console::puts("Dispatching Thread: "); Console::puti(node->thread->ThreadId()); Console::puts("\n");
   Thread::dispatch_to(node->thread);
   delete []node;
