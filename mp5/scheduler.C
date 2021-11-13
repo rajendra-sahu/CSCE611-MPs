@@ -110,8 +110,8 @@ void FIFOScheduler::yield() {
   //Current running thread has been added to the ready queue by the resume() call; now time to pop the head thread in queue & dispatch that node.
   
   /*Keeping cpu yield/dequeueing critical; hence disable & enable interrupts*/
-  //Console::puts("Critical Section Yielding: Disable & Enable Interrupts\n");
-  //Machine::disable_interrupts();
+  Console::puts("Critical Section Yielding: Disable & Enable Interrupts\n");
+  Machine::disable_interrupts();
   
   tcb_node* node = head;
   if(head == NULL)
@@ -125,7 +125,7 @@ void FIFOScheduler::yield() {
   }
   head = head->next;
   
-  //Machine::enable_interrupts();
+  Machine::enable_interrupts();
   
   Console::puts("Dispatching Thread: "); Console::puti(node->thread->ThreadId() + 1); Console::puts("\n");
   Thread::dispatch_to(node->thread);
@@ -144,6 +144,7 @@ void FIFOScheduler::resume(Thread * _thread)
 void FIFOScheduler::terminate(Thread * _thread)
 {
        Console::puts("In derived FIFOscheduler's terminate(); Terminating Thread: "); Console::puti(_thread->ThreadId() + 1); Console::puts("\n");
+       //Machine::disable_interrupts();
 	if (Thread::CurrentThread() == _thread)
 	{
 		yield();
@@ -163,6 +164,7 @@ void FIFOScheduler::terminate(Thread * _thread)
 		prev ->next = curr->next;
 		delete []curr;
 	}
+	//Machine::enable_interrupts();
 }
 
 
