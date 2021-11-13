@@ -143,9 +143,26 @@ void FIFOScheduler::resume(Thread * _thread)
 
 void FIFOScheduler::terminate(Thread * _thread)
 {
-
-	Console::puts("In derived FIFOscheduler's terminate()\n");
-	Console::puts("Terminating Thread: "); Console::puti(_thread->ThreadId() + 1); Console::puts("\n");
+       Console::puts("In derived FIFOscheduler's terminate(); Terminating Thread: "); Console::puti(_thread->ThreadId() + 1); Console::puts("\n");
+	if (Thread::CurrentThread() == _thread)
+	{
+		yield();
+	}
+	else if(head->thread == _thread) 
+	{
+		tcb_node* curr = head;
+		head = head->next;
+		delete []curr;
+	}
+	else
+	{
+		tcb_node* prev = head;
+		while(prev->next->thread != _thread)
+			prev = prev->next;
+		tcb_node* curr = prev->next;
+		prev ->next = curr->next;
+		delete []curr;
+	}
 }
 
 
@@ -199,8 +216,26 @@ void RRScheduler::resume(Thread * _thread)
 
 void RRScheduler::terminate(Thread * _thread)
 {
-	Console::puts("In derived FIFOscheduler's terminate()\n");
-	Console::puts("Terminating Thread: "); Console::puti(_thread->ThreadId()); Console::puts("\n");
+       Console::puts("In derived FIFOscheduler's terminate(); Terminating Thread: "); Console::puti(_thread->ThreadId() + 1); Console::puts("\n");
+	if (Thread::CurrentThread() == _thread)
+	{
+		yield();
+	}
+	else if(head->thread == _thread) 
+	{
+		tcb_node* curr = head;
+		head = head->next;
+		delete []curr;
+	}
+	else
+	{
+		tcb_node* prev = head;
+		while(prev->next->thread != _thread)
+			prev = prev->next;
+		tcb_node* curr = prev->next;
+		prev ->next = curr->next;
+		delete []curr;
+	}
 }
 
 void RRScheduler::handle_rr_quantum()

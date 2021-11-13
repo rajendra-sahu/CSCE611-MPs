@@ -76,7 +76,6 @@ static void thread_shutdown() {
      */
      
      SYSTEM_SCHEDULER->terminate(Thread::CurrentThread());
-     SYSTEM_SCHEDULER->yield();
      delete []current_thread;
      
 
