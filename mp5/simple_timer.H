@@ -73,5 +73,7 @@ class EOQTimer : public SimpleTimer
 public:
 	EOQTimer(int _hz);
 	void handle_interrupt(REGS *_r);
+	void reset_ticks();
+	int  get_ticks();
 };
 #endif

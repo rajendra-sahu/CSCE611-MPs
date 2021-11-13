@@ -157,10 +157,13 @@ public:
 class RRScheduler : public Scheduler{
 
   /* The scheduler may need private members... */
-   //SimpleTimer timer(int);
+  
+  bool rr_yield_flag;
+  //EOQTimer *timer;
   
 public:
-
+   
+ 
    RRScheduler();
    /* Setup the scheduler. This sets up the ready queue, for example.
       If the scheduler implements some sort of round-robin scheme, then the 

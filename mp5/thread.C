@@ -122,9 +122,8 @@ void Thread::setup_context(Thread_Function _tfunction){
      * thread starts.
      */
     /* ---- EFLAGS */
-    push(0 | (1 << 9));
+    push(0 | 1 << 9);
     //Console::puts("EFLAGS = "); Console::putui((unsigned int)get_EFLAGS()); Console::puts("\n");
-    //push(get_EFLAGS());
     /* Clear the IF bit to disable interrupts when thread starts. */
 
     /* ---- CS and EIP REGISTERS */

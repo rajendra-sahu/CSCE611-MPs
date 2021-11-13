@@ -110,6 +110,16 @@ Scheduler * SYSTEM_SCHEDULER;
 
 #endif
 
+#ifdef _FIFO_SCHEDULING_
+    SimpleTimer *timer; /* timer ticks every 10ms. */
+    //InterruptHandler::register_handler(0, &timer);
+    /* The Timer is implemented as an interrupt handler. */
+#else
+    EOQTimer *timer; /* timer ticks every 10ms. */
+    //InterruptHandler::register_handler(0, &timer);
+    /* The Timer is implemented as an interrupt handler. */
+#endif
+
 void pass_on_CPU(Thread * _to_thread) {
   // Hand over CPU from current thread to _to_thread.
   
@@ -125,7 +135,7 @@ void pass_on_CPU(Thread * _to_thread) {
            we pre-empt the current thread by putting it onto the ready
            queue and yielding the CPU. */
 
-        Console::puts("Voluntarilty yielding thread: \n");
+        Console::puts("Voluntarily yielding thread: \n");
         SYSTEM_SCHEDULER->resume(Thread::CurrentThread());
         SYSTEM_SCHEDULER->yield();
 #endif
@@ -257,12 +267,12 @@ int main() {
                  the timer "dies". */               
 
 #ifdef _FIFO_SCHEDULING_
-    SimpleTimer timer(100); /* timer ticks every 10ms. */
-    InterruptHandler::register_handler(0, &timer);
+    timer = new SimpleTimer(100); /* timer ticks every 10ms. */
+    InterruptHandler::register_handler(0, timer);
     /* The Timer is implemented as an interrupt handler. */
 #else
-    EOQTimer timer(100); /* timer ticks every 10ms. */
-    InterruptHandler::register_handler(0, &timer);
+    timer = new EOQTimer(100); /* timer ticks every 10ms. */
+    InterruptHandler::register_handler(0, timer);
     /* The Timer is implemented as an interrupt handler. */
 #endif
 

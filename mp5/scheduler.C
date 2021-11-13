@@ -22,6 +22,7 @@
 #include "assert.H"
 #include "simple_keyboard.H"
 
+
 /*--------------------------------------------------------------------------*/
 /* DATA STRUCTURES */
 /*--------------------------------------------------------------------------*/
@@ -39,7 +40,7 @@
 /*--------------------------------------------------------------------------*/
 
 /* -- (none) -- */
-
+extern EOQTimer *timer;
 /*--------------------------------------------------------------------------*/
 /* METHODS FOR CLASS   S c h e d u l e r  */
 /*--------------------------------------------------------------------------*/
@@ -172,15 +173,29 @@ void FIFOScheduler::terminate(Thread * _thread)
 RRScheduler::RRScheduler()
 {
   //assert(false);
-  //SimpleTimer timer(100);  //configuring for 50mS quantum
-  //InterruptHandler::register_handler(0, &timer);
+  rr_yield_flag = false;
+  //timer =  new EOQTimer(100); /* timer ticks every 10ms. */
+  //InterruptHandler::register_handler(0, timer);
+  //Machine::enable_interrupts();
   Console::puts("Scheduler already constructed in Base Class.\n");
 }
 
-void RRScheduler::yield() {
-  //assert(false);
+void RRScheduler::yield() 
+{
+
   //Current running thread has been added to the ready queue by the resume() call; now time to pop the head thread in queue & dispatch that node.
-  
+  if(rr_yield_flag == false)
+  {
+  	if(timer->get_ticks() == 4)
+  	{
+  		timer->reset_ticks();
+  		Console::puts("Since thread was yielded voluntarily when the quantum was almost over, reseting the timer.\n");
+  	}
+  }
+  else
+  {
+  	rr_yield_flag == false;
+  }
   /*Keeping cpu yield/dequeueing critical; hence disable & enable interrupts*/
   //Console::puts("Critical Section Yielding: Disable & Enable Interrupts\n");
   //Machine::disable_interrupts();
@@ -202,7 +217,7 @@ void RRScheduler::yield() {
   Console::puts("Dispatching Thread: "); Console::puti(node->thread->ThreadId() + 1); Console::puts("\n");
   Thread::dispatch_to(node->thread);
   delete []node;
-  Console::puts("In derived FIFOscheduler  yield()'s actual implementation.\n");
+  Console::puts("In derived RRscheduler  yield()'s actual implementation.\n");
   
 }
 
@@ -210,13 +225,13 @@ void RRScheduler::resume(Thread * _thread)
 {
   //Resuming means adding thread to ready queue
   add(_thread);
-  Console::puts("In derived FIFOscheduler resume()'s actual implementation.\n");
+  Console::puts("In derived RRscheduler resume()'s actual implementation.\n");
 }
 
 
 void RRScheduler::terminate(Thread * _thread)
 {
-       Console::puts("In derived FIFOscheduler's terminate(); Terminating Thread: "); Console::puti(_thread->ThreadId() + 1); Console::puts("\n");
+       Console::puts("In derived RRscheduler's terminate(); Terminating Thread: "); Console::puti(_thread->ThreadId() + 1); Console::puts("\n");
 	if (Thread::CurrentThread() == _thread)
 	{
 		yield();
@@ -241,6 +256,7 @@ void RRScheduler::terminate(Thread * _thread)
 void RRScheduler::handle_rr_quantum()
 {
 	Console::puts("50 mS time quantum has passed; now yielding \n");
+	rr_yield_flag = true;
 	resume(Thread::CurrentThread());
 	yield();
 }

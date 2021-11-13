@@ -134,3 +134,13 @@ void EOQTimer::handle_interrupt(REGS *_r) {
         ((RRScheduler *)SYSTEM_SCHEDULER)->handle_rr_quantum();   
     }
 }
+
+void EOQTimer::reset_ticks()
+{
+	ticks = 0;
+}
+
+int EOQTimer::get_ticks()
+{
+	return ticks;
+}
