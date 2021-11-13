@@ -103,7 +103,7 @@ void SimpleTimer::wait(unsigned long _seconds) {
 /*****************************************************************************************************************/
 EOQTimer::EOQTimer(int _hz): SimpleTimer(_hz){
   /* How long has the system been running? */
-  /Console::puts("Consructed the class in base constructor\n");
+  Console::puts("Consructed the class in base constructor\n");
 
 }
 
