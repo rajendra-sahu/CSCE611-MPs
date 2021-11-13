@@ -39,6 +39,8 @@
    Otherwise, the thread functions don't return, and the threads run forever.
 */
 
+#define _FIFO_SCHEDULING_
+
 /*--------------------------------------------------------------------------*/
 /* INCLUDES */
 /*--------------------------------------------------------------------------*/
@@ -123,6 +125,7 @@ void pass_on_CPU(Thread * _to_thread) {
            we pre-empt the current thread by putting it onto the ready
            queue and yielding the CPU. */
 
+        Console::puts("Voluntarilty yielding thread: \n");
         SYSTEM_SCHEDULER->resume(Thread::CurrentThread());
         SYSTEM_SCHEDULER->yield();
 #endif
@@ -142,7 +145,7 @@ Thread * thread4;
 /* -- THE 4 FUNCTIONS fun1 - fun4 ARE LARGELY IDENTICAL. */
 
 void fun1() {
-    Console::puts("Thread: "); Console::puti(Thread::CurrentThread()->ThreadId()); Console::puts("\n");
+    Console::puts("Thread: "); Console::puti(Thread::CurrentThread()->ThreadId() + 1); Console::puts("\n");
     Console::puts("FUN 1 INVOKED!\n");
 
 #ifdef _TERMINATING_FUNCTIONS_
@@ -161,7 +164,7 @@ void fun1() {
 
 
 void fun2() {
-    Console::puts("Thread: "); Console::puti(Thread::CurrentThread()->ThreadId()); Console::puts("\n");
+    Console::puts("Thread: "); Console::puti(Thread::CurrentThread()->ThreadId() + 1); Console::puts("\n");
     Console::puts("FUN 2 INVOKED!\n");
 
 #ifdef _TERMINATING_FUNCTIONS_
@@ -179,7 +182,7 @@ void fun2() {
 }
 
 void fun3() {
-    Console::puts("Thread: "); Console::puti(Thread::CurrentThread()->ThreadId()); Console::puts("\n");
+    Console::puts("Thread: "); Console::puti(Thread::CurrentThread()->ThreadId() + 1); Console::puts("\n");
     Console::puts("FUN 3 INVOKED!\n");
 
     for(int j = 0;; j++) {
@@ -192,7 +195,7 @@ void fun3() {
 }
 
 void fun4() {
-    Console::puts("Thread: "); Console::puti(Thread::CurrentThread()->ThreadId()); Console::puts("\n");
+    Console::puts("Thread: "); Console::puti(Thread::CurrentThread()->ThreadId() + 1); Console::puts("\n");
     Console::puts("FUN 4 INVOKED!\n");
 
     for(int j = 0;; j++) {
@@ -251,17 +254,26 @@ int main() {
 
     /* Question: Why do we want a timer? We have it to make sure that 
                  we enable interrupts correctly. If we forget to do it,
-                 the timer "dies". */
+                 the timer "dies". */               
 
+#ifdef _FIFO_SCHEDULING_
     SimpleTimer timer(100); /* timer ticks every 10ms. */
     InterruptHandler::register_handler(0, &timer);
     /* The Timer is implemented as an interrupt handler. */
+#else
+    EOQTimer timer(100); /* timer ticks every 10ms. */
+    InterruptHandler::register_handler(0, &timer);
+    /* The Timer is implemented as an interrupt handler. */
+#endif
 
 #ifdef _USES_SCHEDULER_
 
     /* -- SCHEDULER -- IF YOU HAVE ONE -- */
- 
+#ifdef _FIFO_SCHEDULING_
     SYSTEM_SCHEDULER = new FIFOScheduler();
+#else
+    SYSTEM_SCHEDULER = new RRScheduler();
+#endif
 
 #endif
 
@@ -272,7 +284,7 @@ int main() {
 
     /* -- ENABLE INTERRUPTS -- */
 
-    Machine::enable_interrupts();
+    //Machine::enable_interrupts();
 
     /* -- MOST OF WHAT WE NEED IS SETUP. THE KERNEL CAN START. */
 
@@ -306,14 +318,18 @@ int main() {
 
     /* WE ADD thread2 - thread4 TO THE READY QUEUE OF THE SCHEDULER. */
     /*Assumption that the current running thread is not at the head of the queue ; while scheduling it should dispatch the head node which is the next thread in the queue*/ 
-
+    
+    Console::puts("ADDING THREAD 2 FOR THE FIRST TIME...");
     SYSTEM_SCHEDULER->add(thread2);
+    Console::puts("ADDING THREAD 3 FOR THE FIRST TIME...");
     SYSTEM_SCHEDULER->add(thread3);
+    Console::puts("ADDING THREAD 4 FOR THE FIRST TIME...");
     SYSTEM_SCHEDULER->add(thread4);
 
 #endif
     
     
+    Machine::enable_interrupts();
     /* -- KICK-OFF THREAD1 ... */
 
     Console::puts("STARTING THREAD 1 ...\n");

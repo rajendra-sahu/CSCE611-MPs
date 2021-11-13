@@ -34,7 +34,7 @@
 
 class SimpleTimer : public InterruptHandler {
 
-private:
+protected:
 
   /* How long has the system been running? */
   unsigned long seconds; 
@@ -67,4 +67,11 @@ public :
 
 };
 
+class EOQTimer : public SimpleTimer
+{
+	
+public:
+	EOQTimer(int _hz);
+	void handle_interrupt(REGS *_r);
+};
 #endif

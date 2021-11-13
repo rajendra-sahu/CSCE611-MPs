@@ -76,8 +76,8 @@ static void thread_shutdown() {
      */
      
      SYSTEM_SCHEDULER->terminate(Thread::CurrentThread());
-     delete []current_thread;
      SYSTEM_SCHEDULER->yield();
+     delete []current_thread;
      
 
     //assert(false);
@@ -88,7 +88,7 @@ static void thread_shutdown() {
 
 static void thread_start() {
      /* This function is used to release the thread for execution in the ready queue. */
-     Machine::enable_interrupts();
+     //Machine::enable_interrupts();
      /* Enabling the interrupts here */
 }
 
@@ -123,7 +123,7 @@ void Thread::setup_context(Thread_Function _tfunction){
      * thread starts.
      */
     /* ---- EFLAGS */
-    push(0);
+    push(0 | (1 << 9));
     //Console::puts("EFLAGS = "); Console::putui((unsigned int)get_EFLAGS()); Console::puts("\n");
     //push(get_EFLAGS());
     /* Clear the IF bit to disable interrupts when thread starts. */

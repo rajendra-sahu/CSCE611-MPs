@@ -49,4 +49,5 @@ unsigned long MemPool::allocate(unsigned long _size) {
 
 void MemPool::release(unsigned long   _start_address) {
    /* FOR NOW WE DON'T RELEASE MEMORY. */
+   (void)(_start_address);
 }
