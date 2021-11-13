@@ -120,12 +120,7 @@ class FIFOScheduler : public Scheduler{
 public:
 
    FIFOScheduler();
-   /* Setup the scheduler. This sets up the ready queue, for example.
-      If the scheduler implements some sort of round-robin scheme, then the 
-      end_of_quantum handler is installed in the constructor as well. */
-
-   /* NOTE: We are making all functions virtual. This may come in handy when
-            you want to derive RRScheduler from this class. */
+   /* FIFO Scheduler construtor*/
   
    void yield();
    /* Called by the currently running thread in order to give up the CPU. 
@@ -138,10 +133,6 @@ public:
       for threads that were waiting for an event to happen, or that have 
       to give up the CPU in response to a preemption. */
 
-   //void add(Thread * _thread);
-   /* Make the given thread runnable by the scheduler. This function is called
-      after thread creation. Depending on implementation, this function may 
-      just add the thread to the ready queue, using 'resume'. */
 
    void terminate(Thread * _thread);
    /* Remove the given thread from the scheduler in preparation for destruction
@@ -165,12 +156,7 @@ public:
    
  
    RRScheduler();
-   /* Setup the scheduler. This sets up the ready queue, for example.
-      If the scheduler implements some sort of round-robin scheme, then the 
-      end_of_quantum handler is installed in the constructor as well. */
-
-   /* NOTE: We are making all functions virtual. This may come in handy when
-            you want to derive RRScheduler from this class. */
+   /* RR Scheduler contructor*/
   
    void yield();
    /* Called by the currently running thread in order to give up the CPU. 
@@ -183,10 +169,6 @@ public:
       for threads that were waiting for an event to happen, or that have 
       to give up the CPU in response to a preemption. */
 
-   //void add(Thread * _thread);
-   /* Make the given thread runnable by the scheduler. This function is called
-      after thread creation. Depending on implementation, this function may 
-      just add the thread to the ready queue, using 'resume'. */
 
    void terminate(Thread * _thread);
    /* Remove the given thread from the scheduler in preparation for destruction
@@ -194,6 +176,7 @@ public:
       Graciously handle the case where the thread wants to terminate itself.*/
       
    void handle_rr_quantum();
+   /*We do the resume & yield business because of the preemption by the quantum timer */
   
 };
 #endif

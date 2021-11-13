@@ -47,22 +47,21 @@ extern EOQTimer *timer;
 
 Scheduler::Scheduler() 
 {
-  //assert(false);
   
   head = NULL;
   tail = NULL;
     
-  Console::puts("Constructed Scheduler.\n");
+  Console::puts("Constructed Base Scheduler.\n");
 }
 
 void Scheduler::yield() {
-  //assert(false);
   Console::puts("In base Scheduler's yield();  no actual implementation.\n");
+  assert(false);
 }
 
 void Scheduler::resume(Thread * _thread) {
-  //assert(false);
   Console::puts("In base Scheduler's resume(); no actual implementation.\n");
+  assert(false);
 }
 
 void Scheduler::add(Thread * _thread) 
@@ -92,8 +91,8 @@ void Scheduler::add(Thread * _thread)
 }
 
 void Scheduler::terminate(Thread * _thread) {
-  //assert(false);
   Console::puts("In base Scheduler's terminate(); no actual implementation.\n");
+  assert(false);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -172,11 +171,7 @@ void FIFOScheduler::terminate(Thread * _thread)
 /*--------------------------------------------------------------------------*/
 RRScheduler::RRScheduler()
 {
-  //assert(false);
   rr_yield_flag = false;
-  //timer =  new EOQTimer(100); /* timer ticks every 10ms. */
-  //InterruptHandler::register_handler(0, timer);
-  //Machine::enable_interrupts();
   Console::puts("Scheduler already constructed in Base Class.\n");
 }
 
@@ -196,6 +191,7 @@ void RRScheduler::yield()
   {
   	rr_yield_flag == false;
   }
+  
   /*Keeping cpu yield/dequeueing critical; hence disable & enable interrupts*/
   //Console::puts("Critical Section Yielding: Disable & Enable Interrupts\n");
   //Machine::disable_interrupts();

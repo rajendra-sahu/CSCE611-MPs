@@ -103,15 +103,7 @@ void SimpleTimer::wait(unsigned long _seconds) {
 /*****************************************************************************************************************/
 EOQTimer::EOQTimer(int _hz): SimpleTimer(_hz){
   /* How long has the system been running? */
-  //seconds =  0; 
-  //ticks   =  0; /* ticks since last "seconds" update.    */
-
-  /* At what frequency do we update the ticks counter? */
-  /* hz      = 18; */
-                /* Actually, by defaults it is 18.22Hz.
-                   In this way, a 16-bit counter wraps
-                   around every hour.                    */
-  //set_frequency(_hz);
+  /Console::puts("Consructed the class in base constructor\n");
 
 }
 
@@ -125,7 +117,7 @@ void EOQTimer::handle_interrupt(REGS *_r) {
     /* Increment our "ticks" count */
     ticks++;
 
-    /* Whenever a second is over, we update counter accordingly. */
+    /* We define the quantum as 50mS . Hence, the factor of 20. We don't update the seconds counter here. */
     if (ticks >= hz/20 )
     {
         //seconds++;

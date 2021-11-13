@@ -72,8 +72,15 @@ class EOQTimer : public SimpleTimer
 	
 public:
 	EOQTimer(int _hz);
+	/*Constructor of the class EOQTimer*/
+	
 	void handle_interrupt(REGS *_r);
+	/*End of Quantum handler that actually premepts the threads since the time quantum has passed*/
+	
 	void reset_ticks();
+	/*Reset the timer when a thread voluntarily yields but the quantum is also almost over*/
+	
 	int  get_ticks();
+	/*To return the ticks */
 };
 #endif

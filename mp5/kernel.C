@@ -39,7 +39,11 @@
    Otherwise, the thread functions don't return, and the threads run forever.
 */
 
-#define _FIFO_SCHEDULING_
+//#define _FIFO_SCHEDULING_
+/*
+	This macro is defined if we want to select the FIFO scheduler.
+	Comment this if the RR scheduleing is required.
+*/
 
 /*--------------------------------------------------------------------------*/
 /* INCLUDES */
@@ -292,9 +296,7 @@ int main() {
              It is important to install a timer handler, as we
              would get a lot of uncaptured interrupts otherwise. */ 
 
-    /* -- ENABLE INTERRUPTS -- */
 
-    //Machine::enable_interrupts();
 
     /* -- MOST OF WHAT WE NEED IS SETUP. THE KERNEL CAN START. */
 
@@ -338,8 +340,10 @@ int main() {
 
 #endif
     
+    /* -- ENABLE INTERRUPTS ONLY WHEN THE TIMERS & SCHEDULER HAVE BEEN SETUP-- */
     
     Machine::enable_interrupts();
+    
     /* -- KICK-OFF THREAD1 ... */
 
     Console::puts("STARTING THREAD 1 ...\n");
