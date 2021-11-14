@@ -50,6 +50,7 @@ extern MemPool * MEMORY_POOL;
 Scheduler::Scheduler() 
 {
   
+  /*Initilaize head & tail*/
   head = NULL;
   tail = NULL;
     
@@ -68,6 +69,7 @@ void Scheduler::resume(Thread * _thread) {
 
 void Scheduler::add(Thread * _thread) 
 {
+  /*Create an empty node*/
   tcb_node* node = (tcb_node*)(MEMORY_POOL->allocate(sizeof(tcb_node)));
   node->thread = _thread;
   node->next = NULL;
@@ -76,6 +78,7 @@ void Scheduler::add(Thread * _thread)
   //Console::puts("Critical Section Adding: Disable & Enable Interrupts\n");
   //Machine::disable_interrupts();
   
+  /*Add it appropriately*/
   if(head == NULL && tail == NULL)
   {
   	head = node;
@@ -108,7 +111,6 @@ FIFOScheduler::FIFOScheduler()
 }
 
 void FIFOScheduler::yield() {
-  //assert(false);
   //Current running thread has been added to the ready queue by the resume() call; now time to pop the head thread in queue & dispatch that node.
   
   /*Keeping cpu yield/dequeueing critical; hence disable & enable interrupts*/
@@ -145,19 +147,23 @@ void FIFOScheduler::resume(Thread * _thread)
 
 void FIFOScheduler::terminate(Thread * _thread)
 {
+       /*2 possibles scenarios 
+	1- The current running thread has to be terminated
+	2 - A specific thread in the noe has to be terminated*/
+	
        Console::puts("In derived FIFOscheduler's terminate(); Terminating Thread: "); Console::puti(_thread->ThreadId() + 1); Console::puts("\n");
        //Machine::disable_interrupts();
-	if (Thread::CurrentThread() == _thread)
+	if (Thread::CurrentThread() == _thread)    //Curent running thread
 	{
 		yield();
 	}
-	else if(head->thread == _thread) 
+	else if(head->thread == _thread)          //Specific thread in the list
 	{
 		tcb_node* curr = head;
 		head = head->next;
 		MEMORY_POOL->release((unsigned long)curr);
 	}
-	else
+	else                                     //Specific thread in the list
 	{
 		tcb_node* prev = head;
 		while(prev->next->thread != _thread)
@@ -182,7 +188,7 @@ RRScheduler::RRScheduler()
 void RRScheduler::yield() 
 {
 
-  //Current running thread has been added to the ready queue by the resume() call; now time to pop the head thread in queue & dispatch that node.
+  /*Try to distinguish between voluntary yield & timer pre-emption yield*/
   if(rr_yield_flag == false)
   {
   	if(timer->get_ticks() == 4)
@@ -196,6 +202,8 @@ void RRScheduler::yield()
   	rr_yield_flag == false;
   }
   
+  //Current running thread has been added to the ready queue by the resume() call; now time to pop the head thread in queue & dispatch that node.
+    
   /*Keeping cpu yield/dequeueing critical; hence disable & enable interrupts*/
   //Console::puts("Critical Section Yielding: Disable & Enable Interrupts\n");
   //Machine::disable_interrupts();
@@ -231,6 +239,9 @@ void RRScheduler::resume(Thread * _thread)
 
 void RRScheduler::terminate(Thread * _thread)
 {
+        /*2 possibles scenarios 
+	1- The current running thread has to be terminated
+	2 - A specific thread in the noe has to be terminated*/
        Console::puts("In derived RRscheduler's terminate(); Terminating Thread: "); Console::puti(_thread->ThreadId() + 1); Console::puts("\n");
 	if (Thread::CurrentThread() == _thread)
 	{
@@ -255,6 +266,7 @@ void RRScheduler::terminate(Thread * _thread)
 
 void RRScheduler::handle_rr_quantum()
 {
+	/*Same business of resume & yield but set the flag also*/
 	Console::puts("50 mS time quantum has passed; now yielding \n");
 	rr_yield_flag = true;
 	resume(Thread::CurrentThread());

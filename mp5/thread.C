@@ -121,9 +121,8 @@ void Thread::setup_context(Thread_Function _tfunction){
      * bit clear, so that interrupts are disabled when the
      * thread starts.
      */
-    /* ---- EFLAGS */
+    /* ---- EFLAGS Push i in the 9th bit to enable IF bit*/
     push(0 | 1 << 9);
-    //Console::puts("EFLAGS = "); Console::putui((unsigned int)get_EFLAGS()); Console::puts("\n");
     /* Clear the IF bit to disable interrupts when thread starts. */
 
     /* ---- CS and EIP REGISTERS */
