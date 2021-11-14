@@ -37,12 +37,13 @@
 
 #include "threads_low.H"
 #include "scheduler.H"
-
+#include "mem_pool.H"
 /*--------------------------------------------------------------------------*/
 /* EXTERNS */
 /*--------------------------------------------------------------------------*/
 
 extern Scheduler * SYSTEM_SCHEDULER;
+extern MemPool * MEMORY_POOL;
 Thread * current_thread = 0;
 /* Pointer to the currently running thread. This is used by the scheduler,
    for example. */
@@ -76,7 +77,7 @@ static void thread_shutdown() {
      */
      
      SYSTEM_SCHEDULER->terminate(Thread::CurrentThread());
-     delete []current_thread;
+     MEMORY_POOL->release((unsigned long)current_thread);
      
 
     //assert(false);
@@ -87,7 +88,6 @@ static void thread_shutdown() {
 
 static void thread_start() {
      /* This function is used to release the thread for execution in the ready queue. */
-     //Machine::enable_interrupts();
      /* Enabling the interrupts here */
 }
 

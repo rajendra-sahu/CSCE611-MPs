@@ -39,7 +39,7 @@
    Otherwise, the thread functions don't return, and the threads run forever.
 */
 
-#define _FIFO_SCHEDULING_
+//#define _FIFO_SCHEDULING_
 /*
 	This macro is defined if we want to select the FIFO scheduler.
 	Comment this if the RR scheduleing is required.

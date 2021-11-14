@@ -21,6 +21,7 @@
 #include "utils.H"
 #include "assert.H"
 #include "simple_keyboard.H"
+#include "mem_pool.H"
 
 
 /*--------------------------------------------------------------------------*/
@@ -41,6 +42,7 @@
 
 /* -- (none) -- */
 extern EOQTimer *timer;
+extern MemPool * MEMORY_POOL;
 /*--------------------------------------------------------------------------*/
 /* METHODS FOR CLASS   S c h e d u l e r  */
 /*--------------------------------------------------------------------------*/
@@ -66,7 +68,7 @@ void Scheduler::resume(Thread * _thread) {
 
 void Scheduler::add(Thread * _thread) 
 {
-  tcb_node* node = (tcb_node*) new char[sizeof(tcb_node)];
+  tcb_node* node = (tcb_node*)(MEMORY_POOL->allocate(sizeof(tcb_node)));
   node->thread = _thread;
   node->next = NULL;
   
@@ -129,7 +131,7 @@ void FIFOScheduler::yield() {
   
   Console::puts("Dispatching Thread: "); Console::puti(node->thread->ThreadId() + 1); Console::puts("\n");
   Thread::dispatch_to(node->thread);
-  delete []node;
+  MEMORY_POOL->release((unsigned long)node);
   Console::puts("In derived FIFOscheduler  yield()'s actual implementation.\n");
 }
 
@@ -153,7 +155,7 @@ void FIFOScheduler::terminate(Thread * _thread)
 	{
 		tcb_node* curr = head;
 		head = head->next;
-		delete []curr;
+		MEMORY_POOL->release((unsigned long)curr);
 	}
 	else
 	{
@@ -162,7 +164,7 @@ void FIFOScheduler::terminate(Thread * _thread)
 			prev = prev->next;
 		tcb_node* curr = prev->next;
 		prev ->next = curr->next;
-		delete []curr;
+		MEMORY_POOL->release((unsigned long)curr);
 	}
 	//Machine::enable_interrupts();
 }
@@ -214,7 +216,7 @@ void RRScheduler::yield()
   
   Console::puts("Dispatching Thread: "); Console::puti(node->thread->ThreadId() + 1); Console::puts("\n");
   Thread::dispatch_to(node->thread);
-  delete []node;
+  MEMORY_POOL->release((unsigned long)node);
   Console::puts("In derived RRscheduler  yield()'s actual implementation.\n");
   
 }
@@ -238,7 +240,7 @@ void RRScheduler::terminate(Thread * _thread)
 	{
 		tcb_node* curr = head;
 		head = head->next;
-		delete []curr;
+		MEMORY_POOL->release((unsigned long)curr);
 	}
 	else
 	{
@@ -247,7 +249,7 @@ void RRScheduler::terminate(Thread * _thread)
 			prev = prev->next;
 		tcb_node* curr = prev->next;
 		prev ->next = curr->next;
-		delete []curr;
+		MEMORY_POOL->release((unsigned long)curr);
 	}
 }
 
