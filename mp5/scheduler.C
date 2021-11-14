@@ -177,7 +177,7 @@ void FIFOScheduler::terminate(Thread * _thread)
 
 
 /*--------------------------------------------------------------------------*/
-/* METHODS FOR CLASS   R R S c h e d u l e r  */
+/* METHODS FOR CLASS   R R S c h e d u l e r  For option 2  */   
 /*--------------------------------------------------------------------------*/
 RRScheduler::RRScheduler()
 {

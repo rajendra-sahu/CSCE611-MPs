@@ -107,6 +107,9 @@ EOQTimer::EOQTimer(int _hz): SimpleTimer(_hz){
 
 }
 
+/*--------------------------------------------------------------------------*/
+/* EOQTimer methods*/
+/*--------------------------------------------------------------------------*/
 
 void EOQTimer::handle_interrupt(REGS *_r) {
 /* What to do when timer interrupt occurs? In this case, we update "ticks",
