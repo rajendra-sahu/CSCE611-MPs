@@ -27,13 +27,25 @@
 /* DATA STRUCTURES */ 
 /*--------------------------------------------------------------------------*/
 
-/* -- (none) -- */
+struct rw_request_s
+{
+	unsigned long  rw_block_no;
+	unsigned char* buf;
+	struct rw_request_s* next;
+};
+
+typedef struct rw_request_s rw_request;
 
 /*--------------------------------------------------------------------------*/
 /* B l o c k i n g D i s k  */
 /*--------------------------------------------------------------------------*/
 
 class BlockingDisk : public SimpleDisk {
+
+  //head & tail of the request queue
+  rw_request* head;
+  rw_request* tail;
+  
 public:
    BlockingDisk(DISK_ID _disk_id, unsigned int _size); 
    /* Creates a BlockingDisk device with the given size connected to the 
@@ -41,6 +53,11 @@ public:
       NOTE: We are passing the _size argument out of laziness. 
       In a real system, we would infer this information from the 
       disk controller. */
+      
+   /*QUEUE OPERATIONS*/
+   
+   void push_request(unsigned long _block_no, unsigned char * _buf);
+   void pop_request(unsigned long _block_no, unsigned char * _buf);
 
    /* DISK OPERATIONS */
 

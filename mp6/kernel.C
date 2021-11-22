@@ -166,7 +166,7 @@ void fun2() {
 
     Console::puts("FUN 2 INVOKED!\n");
 
-    unsigned char buf[DISK_BLOCK_SIZE];
+    unsigned char* buf = new unsigned char[DISK_BLOCK_SIZE];
     int  read_block  = 1;
     int  write_block = 0;
 

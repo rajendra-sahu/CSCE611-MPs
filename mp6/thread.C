@@ -43,9 +43,9 @@
 /* EXTERNS */
 /*--------------------------------------------------------------------------*/
 
-extern Scheduler * SYSTEM_SCHEDULER;
+//extern Scheduler * SYSTEM_SCHEDULER;
 Thread * current_thread = 0;
-extern MemPool * MEMORY_POOL;
+//extern MemPool * MEMORY_POOL;
 /* Pointer to the currently running thread. This is used by the scheduler,
    for example. */
 
@@ -77,10 +77,10 @@ static void thread_shutdown() {
        This is a bit complicated because the thread termination interacts with the scheduler.
      */
      
-     SYSTEM_SCHEDULER->terminate(Thread::CurrentThread());
-     MEMORY_POOL->release((unsigned long)current_thread);
+     //SYSTEM_SCHEDULER->terminate(Thread::CurrentThread());
+     //MEMORY_POOL->release((unsigned long)current_thread);
 
-    //assert(false);
+    assert(false);
     /* Let's not worry about it for now. 
        This means that we should have non-terminating thread functions. 
     */
