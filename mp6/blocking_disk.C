@@ -24,6 +24,7 @@
 #include "blocking_disk.H"
 #include "scheduler.H"
 #include "mem_pool.H"
+#include "thread.H" 
 
 extern MemPool * MEMORY_POOL;
 extern Scheduler * SYSTEM_SCHEDULER;
@@ -101,6 +102,8 @@ void BlockingDisk::read(unsigned long _block_no, unsigned char * _buf) {
   issue_operation(DISK_OPERATION::READ, _block_no);
   //SYSTEM_SCHEDULER->yield();
   //SimpleDisk::read(_block_no, _buf);
+  
+  nonblock_wait_and_process();
 
 }
 
@@ -111,9 +114,38 @@ void BlockingDisk::write(unsigned long _block_no, unsigned char * _buf) {
   issue_operation(DISK_OPERATION::WRITE, _block_no);
   //SYSTEM_SCHEDULER->yield();
   //SimpleDisk::write(_block_no, _buf);
+  nonblock_wait_and_process();
 }
 
-void nonblock_wait_and_process()
+void BlockingDisk::nonblock_wait_and_process()
 {
-	
+  while(!is_ready())
+  {
+        SYSTEM_SCHEDULER->resume(Thread::CurrentThread()); 
+        SYSTEM_SCHEDULER->yield();
+  }
+  
+  Console::puts("Device is ready, performing the actual operation\n "); 
+  int i;
+  unsigned short tmpw;
+  
+  if(head->op == DISK_OPERATION::READ)
+  {
+	for (i = 0; i < 256; i++) 
+	{
+	tmpw = Machine::inportw(0x1F0);
+	head->buf[i*2]   = (unsigned char)tmpw;
+	head->buf[i*2+1] = (unsigned char)(tmpw >> 8);
+	}
+  }
+  else
+  {
+  	  for (i = 0; i < 256; i++) 
+  	  {
+    	  tmpw = head->buf[2*i] | (head->buf[2*i+1] << 8);
+          Machine::outportw(0x1F0, tmpw);
+  	  }
+  }
+
+  
 }
