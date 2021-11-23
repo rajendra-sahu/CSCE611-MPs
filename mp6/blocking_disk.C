@@ -22,9 +22,11 @@
 #include "utils.H"
 #include "console.H"
 #include "blocking_disk.H"
+#include "scheduler.H"
 #include "mem_pool.H"
 
 extern MemPool * MEMORY_POOL;
+extern Scheduler * SYSTEM_SCHEDULER;
 /*--------------------------------------------------------------------------*/
 /* CONSTRUCTOR */
 /*--------------------------------------------------------------------------*/
@@ -43,10 +45,11 @@ BlockingDisk::BlockingDisk(DISK_ID _disk_id, unsigned int _size)
 /* REQUEST QUEUE FUNCTIONS */
 /*--------------------------------------------------------------------------*/
 
-void BlockingDisk::push_request(unsigned long _block_no, unsigned char * _buf)
+void BlockingDisk::push_request(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf)
 {
   /*Create an empty node*/
   rw_request* node = (rw_request*)(MEMORY_POOL->allocate(sizeof(rw_request)));
+  node->op = _op;
   node->rw_block_no = _block_no;
   node->buf = _buf;
   node->next = NULL;
@@ -73,9 +76,19 @@ void BlockingDisk::push_request(unsigned long _block_no, unsigned char * _buf)
 }
 
 
-void BlockingDisk::pop_request(unsigned long _block_no, unsigned char * _buf)
+void BlockingDisk::pop_request()
 {
-	
+  if(head)
+  {
+  	rw_request* node = head;
+  	head - head->next;
+  	SimpleDisk::issue_operation(node->op, node->rw_block_no);
+  	MEMORY_POOL->release((unsigned long)node);
+  }
+  else
+  {
+  	Console::puts("No more requests in the queue, wait for requests to be enqueued\n "); 
+  }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -84,12 +97,23 @@ void BlockingDisk::pop_request(unsigned long _block_no, unsigned char * _buf)
 
 void BlockingDisk::read(unsigned long _block_no, unsigned char * _buf) {
   // -- REPLACE THIS!!!
-  SimpleDisk::read(_block_no, _buf);
+  push_request(DISK_OPERATION::READ, _block_no, _buf);
+  issue_operation(DISK_OPERATION::READ, _block_no);
+  //SYSTEM_SCHEDULER->yield();
+  //SimpleDisk::read(_block_no, _buf);
 
 }
 
 
 void BlockingDisk::write(unsigned long _block_no, unsigned char * _buf) {
   // -- REPLACE THIS!!!
-  SimpleDisk::write(_block_no, _buf);
+  push_request(DISK_OPERATION::WRITE, _block_no, _buf);
+  issue_operation(DISK_OPERATION::WRITE, _block_no);
+  //SYSTEM_SCHEDULER->yield();
+  //SimpleDisk::write(_block_no, _buf);
+}
+
+void nonblock_wait_and_process()
+{
+	
 }

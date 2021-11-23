@@ -35,17 +35,14 @@
 #include "frame_pool.H"
 
 #include "thread.H"
-#include "scheduler.H"
 #include "threads_low.H"
-#include "mem_pool.H"
 
 /*--------------------------------------------------------------------------*/
 /* EXTERNS */
 /*--------------------------------------------------------------------------*/
 
-//extern Scheduler * SYSTEM_SCHEDULER;
+
 Thread * current_thread = 0;
-//extern MemPool * MEMORY_POOL;
 /* Pointer to the currently running thread. This is used by the scheduler,
    for example. */
 
@@ -77,8 +74,6 @@ static void thread_shutdown() {
        This is a bit complicated because the thread termination interacts with the scheduler.
      */
      
-     //SYSTEM_SCHEDULER->terminate(Thread::CurrentThread());
-     //MEMORY_POOL->release((unsigned long)current_thread);
 
     assert(false);
     /* Let's not worry about it for now. 

@@ -27,14 +27,17 @@
 /* DATA STRUCTURES */ 
 /*--------------------------------------------------------------------------*/
 
+
 struct rw_request_s
 {
+	DISK_OPERATION op;
 	unsigned long  rw_block_no;
 	unsigned char* buf;
 	struct rw_request_s* next;
 };
 
 typedef struct rw_request_s rw_request;
+
 
 /*--------------------------------------------------------------------------*/
 /* B l o c k i n g D i s k  */
@@ -56,8 +59,8 @@ public:
       
    /*QUEUE OPERATIONS*/
    
-   void push_request(unsigned long _block_no, unsigned char * _buf);
-   void pop_request(unsigned long _block_no, unsigned char * _buf);
+   void push_request(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf);
+   void pop_request();
 
    /* DISK OPERATIONS */
 
@@ -67,6 +70,8 @@ public:
 
    virtual void write(unsigned long _block_no, unsigned char * _buf);
    /* Writes 512 Bytes from the buffer to the given block on the disk. */
+   
+   void nonblock_wait_and_process();
 
 };
 
