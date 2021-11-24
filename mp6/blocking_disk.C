@@ -36,8 +36,10 @@ BlockingDisk::BlockingDisk(DISK_ID _disk_id, unsigned int _size)
   : SimpleDisk(_disk_id, _size) {
   
   /*Initilaize head & tail*/
-  head = NULL;
-  tail = NULL;
+  //head = NULL;
+  //tail = NULL;
+  
+  request =   (rw_request*)(MEMORY_POOL->allocate(sizeof(rw_request)));
   
   Console::puts("Constructed Derived BlockingDisk.\n");
 }
@@ -49,18 +51,15 @@ BlockingDisk::BlockingDisk(DISK_ID _disk_id, unsigned int _size)
 void BlockingDisk::push_request(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf)
 {
   /*Create an empty node*/
-  rw_request* node = (rw_request*)(MEMORY_POOL->allocate(sizeof(rw_request)));
+  /*rw_request* node = (rw_request*)(MEMORY_POOL->allocate(sizeof(rw_request)));
   node->op = _op;
   node->rw_block_no = _block_no;
   node->buf = _buf;
-  node->next = NULL;
+  node->next = NULL;*/
   
-  /*Keeping enqueuing critical; hence disable & enable interrupts*/
-  //Console::puts("Critical Section Adding: Disable & Enable Interrupts\n");
-  //Machine::disable_interrupts();
   
   /*Add it appropriately*/
-  if(head == NULL && tail == NULL)
+  /*if(head == NULL && tail == NULL)
   {
   	head = node;
   	tail = node;
@@ -69,17 +68,22 @@ void BlockingDisk::push_request(DISK_OPERATION _op, unsigned long _block_no, uns
   {
   	tail->next = node;
   	tail = node;
-  }
+  }*/
   
-  //Machine::enable_interrupts();
-    
+   
+  
+  request->op = _op;
+  request->rw_block_no = _block_no;
+  request->buf = _buf;
+  request->next = NULL;
+  
   Console::puts("Added request to the queue\n "); 
 }
 
 
 void BlockingDisk::pop_request()
 {
-  if(head)
+  /*if(head)
   {
   	rw_request* node = head;
   	head - head->next;
@@ -89,7 +93,7 @@ void BlockingDisk::pop_request()
   else
   {
   	Console::puts("No more requests in the queue, wait for requests to be enqueued\n "); 
-  }
+  }*/
 }
 
 /*--------------------------------------------------------------------------*/
@@ -115,6 +119,7 @@ void BlockingDisk::write(unsigned long _block_no, unsigned char * _buf) {
   //SYSTEM_SCHEDULER->yield();
   //SimpleDisk::write(_block_no, _buf);
   nonblock_wait_and_process();
+  
 }
 
 void BlockingDisk::nonblock_wait_and_process()
@@ -126,26 +131,29 @@ void BlockingDisk::nonblock_wait_and_process()
   }
   
   Console::puts("Device is ready, performing the actual operation\n "); 
-  int i;
+  unsigned long i;
   unsigned short tmpw;
   
-  if(head->op == DISK_OPERATION::READ)
+  if(request->op == DISK_OPERATION::READ)
   {
 	for (i = 0; i < 256; i++) 
 	{
 	tmpw = Machine::inportw(0x1F0);
-	head->buf[i*2]   = (unsigned char)tmpw;
-	head->buf[i*2+1] = (unsigned char)(tmpw >> 8);
+	request->buf[i*2]   = (unsigned char)tmpw;
+	request->buf[i*2+1] = (unsigned char)(tmpw >> 8);
 	}
   }
   else
   {
   	  for (i = 0; i < 256; i++) 
   	  {
-    	  tmpw = head->buf[2*i] | (head->buf[2*i+1] << 8);
+    	  tmpw = request->buf[2*i] | (request->buf[2*i+1] << 8);
           Machine::outportw(0x1F0, tmpw);
   	  }
   }
+  
+  //for(i = 0; i< 5000000; i++)
+  //{ }
 
   
 }

@@ -46,8 +46,10 @@ typedef struct rw_request_s rw_request;
 class BlockingDisk : public SimpleDisk {
 
   //head & tail of the request queue
-  rw_request* head;
-  rw_request* tail;
+  //rw_request* head;
+  //rw_request* tail;
+  
+  rw_request* request;
   
 public:
    BlockingDisk(DISK_ID _disk_id, unsigned int _size); 
