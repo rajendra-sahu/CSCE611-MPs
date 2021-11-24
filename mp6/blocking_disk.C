@@ -81,9 +81,9 @@ void BlockingDisk::push_request(DISK_OPERATION _op, unsigned long _block_no, uns
 }
 
 
-void BlockingDisk::pop_request()
+/*void BlockingDisk::pop_request()
 {
-  /*if(head)
+  if(head)
   {
   	rw_request* node = head;
   	head - head->next;
@@ -93,8 +93,8 @@ void BlockingDisk::pop_request()
   else
   {
   	Console::puts("No more requests in the queue, wait for requests to be enqueued\n "); 
-  }*/
-}
+  }
+}*/
 
 /*--------------------------------------------------------------------------*/
 /* SIMPLE_DISK FUNCTIONS */
@@ -151,9 +151,5 @@ void BlockingDisk::nonblock_wait_and_process()
           Machine::outportw(0x1F0, tmpw);
   	  }
   }
-  
-  //for(i = 0; i< 5000000; i++)
-  //{ }
-
   
 }
