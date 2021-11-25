@@ -126,7 +126,8 @@ void BlockingDisk::nonblock_wait_and_process()
 {
   while(!is_ready())
   {
-        SYSTEM_SCHEDULER->resume(Thread::CurrentThread()); 
+        SYSTEM_SCHEDULER->resume(Thread::CurrentThread());
+        Console::puts("Device is not ready, voluntarily yielding thread\n ");  
         SYSTEM_SCHEDULER->yield();
   }
   

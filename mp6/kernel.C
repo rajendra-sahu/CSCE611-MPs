@@ -180,8 +180,10 @@ void fun2() {
 
        /* -- Display */
        for (int i = 0; i < DISK_BLOCK_SIZE; i++) {
+           buf[i] = 'a';
            Console::putch(buf[i]);
        }
+       Console::puts("\n");
 
        Console::puts("Writing a block to disk...\n");
        SYSTEM_DISK->write(write_block, buf); 

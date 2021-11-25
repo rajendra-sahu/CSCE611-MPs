@@ -61,8 +61,8 @@ public:
       
    /*QUEUE OPERATIONS*/
    
-   //void push_request(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf);
-   void pop_request();
+   void push_request(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf);
+   //void pop_request();
 
    /* DISK OPERATIONS */
 
