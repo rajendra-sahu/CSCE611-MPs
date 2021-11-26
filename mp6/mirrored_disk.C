@@ -35,9 +35,11 @@ extern Scheduler * SYSTEM_SCHEDULER;
 MirroredDisk::MirroredDisk(DISK_ID _disk_id, unsigned int _size) 
   : SimpleDisk(_disk_id, _size) {
   
-  
+  //Creastes 2 instances of the simple_disk
   master = new SimpleDisk(DISK_ID::MASTER, _size);
   dependent = new SimpleDisk(DISK_ID::DEPENDENT, _size);
+  
+  //allocates memeory of the io request
   request =   (mirr_request*)(MEMORY_POOL->allocate(sizeof(mirr_request))); 
   Console::puts("Constructed Derived MirroredDisk.\n");
 }
@@ -67,47 +69,45 @@ void MirroredDisk::issue_mirrored_operation(DISK_ID _disk_id, DISK_OPERATION _op
 
 
 void MirroredDisk::read(unsigned long _block_no, unsigned char * _buf) {
-  // -- REPLACE THIS!!!
-  //push_request(DISK_OPERATION::READ, _block_no, _buf);
   
+  /*Saving the io request*/
   request->op = DISK_OPERATION::READ;
   request->rw_block_no = _block_no;
   request->buf = _buf;
   
   Console::puts("Issuing mirrored operation\n "); 
-  issue_mirrored_operation(DISK_ID::MASTER, DISK_OPERATION::READ, _block_no);
-  issue_mirrored_operation(DISK_ID::DEPENDENT,DISK_OPERATION::READ, _block_no);
-  //master->issue_operation(DISK_OPERATION::READ, _block_no);
-  //dependent->issue_operation(DISK_OPERATION::READ, _block_no);
+  
+  issue_mirrored_operation(DISK_ID::MASTER, DISK_OPERATION::READ, _block_no);      // IO command to the master
+  issue_mirrored_operation(DISK_ID::DEPENDENT,DISK_OPERATION::READ, _block_no);    // IO command to the dependent
 
   
+  //non block wait
   wait_and_process();
 
 }
 
 
 void MirroredDisk::write(unsigned long _block_no, unsigned char * _buf) {
-  // -- REPLACE THIS!!!
-  //push_request(DISK_OPERATION::WRITE, _block_no, _buf);
   
+  /*Saving the io request*/
   request->op = DISK_OPERATION::WRITE;
   request->rw_block_no = _block_no;
   request->buf = _buf;
   
   Console::puts("Issuing mirrored operation\n "); 
-  issue_mirrored_operation(DISK_ID::MASTER, DISK_OPERATION::WRITE, _block_no);
-  issue_mirrored_operation(DISK_ID::DEPENDENT,DISK_OPERATION::WRITE, _block_no);
+  issue_mirrored_operation(DISK_ID::MASTER, DISK_OPERATION::WRITE, _block_no);      // IO command to the master
+  issue_mirrored_operation(DISK_ID::DEPENDENT,DISK_OPERATION::WRITE, _block_no);    // IO command to the dependent
   
-  
+  //non block wait
   wait_and_process();
   
 }
 
 void MirroredDisk::wait_and_process()
 {
-  while(!master->is_ready() || !dependent->is_ready())
+  while(!master->is_ready() || !dependent->is_ready())                  //Waits for both of the devices to be ready since it's a mirrored drive
   {
-        SYSTEM_SCHEDULER->resume(Thread::CurrentThread());
+        SYSTEM_SCHEDULER->resume(Thread::CurrentThread());              //Add the thread to teh ready queue again
         Console::puts("Device is not ready, voluntarily yielding thread\n ");  
         SYSTEM_SCHEDULER->yield();
   }
@@ -116,6 +116,7 @@ void MirroredDisk::wait_and_process()
   unsigned long i;
   unsigned short tmpw;
   
+  /*Performing the actual data transfer*/
   if(request->op == DISK_OPERATION::READ)
   {
 	for (i = 0; i < 256; i++) 
