@@ -48,8 +48,8 @@ class BlockingDisk : public SimpleDisk {
   //head & tail of the request queue
   //rw_request* head;
   //rw_request* tail;
-  
   rw_request* request;
+
   
 public:
    BlockingDisk(DISK_ID _disk_id, unsigned int _size); 
@@ -61,6 +61,9 @@ public:
       
    /*QUEUE OPERATIONS*/
    
+protected:
+  
+  
    void push_request(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf);
    //void pop_request();
 
@@ -76,5 +79,4 @@ public:
    void nonblock_wait_and_process();
 
 };
-
 #endif

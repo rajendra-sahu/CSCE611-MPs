@@ -57,8 +57,7 @@ protected:
      /* Send a sequence of commands to the controller to initialize the READ/WRITE 
         operation. This operation is called by read() and write(). */ 
 
-     virtual bool is_ready();
-     /* Return true if disk is ready to transfer data from/to disk, false otherwise. */
+
 
      virtual void wait_until_ready() {
         while (!is_ready()) { /* wait */; }
@@ -79,6 +78,9 @@ public:
 
    /* DISK CONFIGURATION */
    
+   virtual bool is_ready();
+   /* Return true if disk is ready to transfer data from/to disk, false otherwise. */
+     
    virtual unsigned int size();
    /* Returns the size of the disk, in Byte. */   
 
