@@ -182,7 +182,7 @@ void fun2() {
 
        /* -- Display */
        for (int i = 0; i < DISK_BLOCK_SIZE; i++) {
-           buf[i] = 'a';
+           buf[i] = 'a';                    //Populating hard disk with 'a'
            Console::putch(buf[i]);
        }
        Console::puts("\n");
@@ -295,7 +295,8 @@ int main() {
     /* -- DISK DEVICE -- */
 
 #ifdef _DISK_MIRRORING 
-    SYSTEM_DISK = new MirroredDisk(DISK_ID::MASTER, SYSTEM_DISK_SIZE);
+    /* O P T I O N 1 :  M I R R O R E D   D I S K */
+    SYSTEM_DISK = new MirroredDisk(DISK_ID::MASTER, SYSTEM_DISK_SIZE);                
 #else
     SYSTEM_DISK = new BlockingDisk(DISK_ID::MASTER, SYSTEM_DISK_SIZE);
 #endif

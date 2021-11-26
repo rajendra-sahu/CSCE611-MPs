@@ -48,12 +48,11 @@ BlockingDisk::BlockingDisk(DISK_ID _disk_id, unsigned int _size)
 void BlockingDisk::push_request(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf)
 {   
   
+  //Saving the io request
   request->op = _op;
   request->rw_block_no = _block_no;
   request->buf = _buf;
-  request->next = NULL;
   
-  Console::puts("Added request to the queue\n "); 
 }
 
 
@@ -63,7 +62,13 @@ void BlockingDisk::push_request(DISK_OPERATION _op, unsigned long _block_no, uns
 /*--------------------------------------------------------------------------*/
 
 void BlockingDisk::read(unsigned long _block_no, unsigned char * _buf) {
-  // -- REPLACE THIS!!!
+
+  /*
+  1. save the request
+  2. issue actual command to the device
+  3. call the non blocking wait
+  */
+  
   push_request(DISK_OPERATION::READ, _block_no, _buf);
   issue_operation(DISK_OPERATION::READ, _block_no);
   nonblock_wait_and_process();
@@ -72,7 +77,13 @@ void BlockingDisk::read(unsigned long _block_no, unsigned char * _buf) {
 
 
 void BlockingDisk::write(unsigned long _block_no, unsigned char * _buf) {
-  // -- REPLACE THIS!!!
+
+  /*
+  1. save the request
+  2. issue actual command to the device
+  3. call the non blocking wait
+  */
+  
   push_request(DISK_OPERATION::WRITE, _block_no, _buf);
   issue_operation(DISK_OPERATION::WRITE, _block_no);
   nonblock_wait_and_process();
@@ -81,9 +92,11 @@ void BlockingDisk::write(unsigned long _block_no, unsigned char * _buf) {
 
 void BlockingDisk::nonblock_wait_and_process()
 {
-  while(!is_ready())
+  /*This is actually not a blocking wait.
+    Thread will yield if device not ready, else the next resume of the thread should have the same consistency*/
+  while(!is_ready())                                         
   {
-        SYSTEM_SCHEDULER->resume(Thread::CurrentThread());
+        SYSTEM_SCHEDULER->resume(Thread::CurrentThread());                  //Add the thread to teh ready queue again
         Console::puts("Device is not ready, voluntarily yielding thread\n ");  
         SYSTEM_SCHEDULER->yield();
   }
@@ -92,6 +105,7 @@ void BlockingDisk::nonblock_wait_and_process()
   unsigned long i;
   unsigned short tmpw;
   
+  /*Performing the actual data transfer*/
   if(request->op == DISK_OPERATION::READ)
   {
 	for (i = 0; i < 256; i++) 

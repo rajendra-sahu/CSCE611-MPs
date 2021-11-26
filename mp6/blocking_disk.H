@@ -27,13 +27,12 @@
 /* DATA STRUCTURES */ 
 /*--------------------------------------------------------------------------*/
 
-
+/*Structure to save all in the info relevant to the io request*/
 struct rw_request_s
 {
 	DISK_OPERATION op;
 	unsigned long  rw_block_no;
 	unsigned char* buf;
-	struct rw_request_s* next;
 };
 
 typedef struct rw_request_s rw_request;
@@ -45,10 +44,8 @@ typedef struct rw_request_s rw_request;
 
 class BlockingDisk : public SimpleDisk {
 
-  //head & tail of the request queue
-  //rw_request* head;
-  //rw_request* tail;
-  rw_request* request;
+  rw_request* request;          //placeholder to save the io request
+  
 
   
 public:
@@ -59,13 +56,12 @@ public:
       In a real system, we would infer this information from the 
       disk controller. */
       
-   /*QUEUE OPERATIONS*/
    
 protected:
   
   
    void push_request(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf);
-   //void pop_request();
+   /*Saves the io request so that it can be referred later*/
 
    /* DISK OPERATIONS */
 
@@ -77,6 +73,7 @@ protected:
    /* Writes 512 Bytes from the buffer to the given block on the disk. */
    
    void nonblock_wait_and_process();
+   /*waits non-blockingly (yields if the device is not ready) and then processes the io request when the device is ready*/
 
 };
 #endif
