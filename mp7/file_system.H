@@ -82,17 +82,20 @@ private:
   /* Just as an example, you can store MAX_INODES in a single INODES block */
 
   Inode *inodes; // the inode list
+  unsigned long inodes_count;    //max value is MAX_INODES
   /* The inode list */
 
   unsigned char *free_blocks;
   /* The free-block list. You may want to implement the "list" as a bitmap. 
      Feel free to use an unsigned char to represent whether a block is free or not; 
      no need to go to bits if you don't want to. 
+     
+     0 - FREE  1 - OCCUPIED
      If you reserve one block to store the "free list", you can handle a file system up to 
      256kB. (Large enough as a proof of concept.) */
-     
-  // short GetFreeInode();
-  // int GetFreeBlock();
+  unsigned long free_blocks_count;
+  short GetFreeInode();
+  unsigned long GetFreeBlock();
   /* It may be helpful to two functions to hand out free inodes in the inode list and free
      blocks. These functions also come useful to class Inode and File. */
 
