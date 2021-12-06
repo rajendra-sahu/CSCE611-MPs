@@ -35,6 +35,8 @@
 /* CLASS FileSystem */
 /*--------------------------------------------------------------------------*/
 
+
+//FileSystem* FileSystem::current_fs = NULL;
 /*--------------------------------------------------------------------------*/
 /* CONSTRUCTOR */
 /*--------------------------------------------------------------------------*/
@@ -44,6 +46,9 @@ FileSystem::FileSystem() {
     
     inodes =  (Inode *)(new unsigned char[DISK_BLOCK_SIZE]);           //Allocating a block for inodes
     free_blocks = new unsigned char[DISK_BLOCK_SIZE];                 //Allocating a block for freelist
+    //inodes_count = 0;
+    //free_blocks_count = 0;
+    //current_fs = this;
     //assert(false);
 }
 
@@ -69,23 +74,43 @@ FileSystem::~FileSystem() {
 unsigned long FileSystem::GetFreeBlock()
 {
     //bool free_found = false;
-    for(unsigned int i = 0; i < free_blocks_count; i++)
+    for(unsigned int i = 0; i < DISK_BLOCK_SIZE; i++)
     {
     	if(free_blocks[i] == 0)
-    	return i;
+    	{  //free_blocks_count++; 
+    	   return i; }
+    	
     }
     
-    free_blocks_count++;
-    return free_blocks_count-1;
+    return 0xFFFFFFFF;                   //Indicator of no free blocks
+    
+    /*if(free_blocks_count + 1 > 512)
+    return 0xFFFFFFFF;                   //Indicator of no free blocks
+    else
+    {
+	    free_blocks_count++;
+	    return free_blocks_count-1;
+    }*/
 	
+}
+
+unsigned long FileSystem::GetFreeInode()
+{
+	for(unsigned int i = 0; i < MAX_INODES; i++)
+	{
+		if(inodes[i].id == 0xFFFFFFFF)
+		return i;
+	}
+	
+	return 0xFFFFFFFF;
 }
 
 bool FileSystem::Mount(SimpleDisk * _disk) {
     Console::puts("mounting file system from disk\n");
 
     /* Here you read the inode list and the free list into memory */
-    disk->read(INODES_BLOCK_NO, (unsigned char *)(inodes));
-    disk->read(FREELIST_BLOCK_NO, free_blocks);
+    _disk->read(INODES_BLOCK_NO, (unsigned char *)(inodes));
+    _disk->read(FREELIST_BLOCK_NO, free_blocks);
     
     /*Return true only if the first two blocks have been marked occupied*/
     if(free_blocks[0] == 1 && free_blocks[1] == 1)
@@ -100,26 +125,31 @@ bool FileSystem::Format(SimpleDisk * _disk, unsigned int _size) { // static!
     /* Here you populate the disk with an initialized (probably empty) inode list
        and a free list. Make sure that blocks used for the inodes and for the free list
        are marked as used, otherwise they may get overwritten. */
-    unsigned int i;
-    for(i = 0; i < DISK_BLOCK_SIZE; i++)
+       
+    //using the self defined fs stattic variable ; not using the parameters
+    unsigned char buf[DISK_BLOCK_SIZE];
+    for(unsigned int i = 0; i < DISK_BLOCK_SIZE; i++)
     {
-    	inodes[i] = 0;
-    	free_blocks[i] = 0;
+    	buf[i] = 0xFF;
     }
+    _disk->write(INODES_BLOCK_NO, buf);
     
-    free_blocks[0] = 1;
-    free_blocks[1] = 1;
-    
-    disk->write(INODES_BLOCK_NO, (unsigned char *)(inodes));
-    disk->write(FREELIST_BLOCK_NO, free_blocks);
-    
+    for(unsigned int i = 0; i < DISK_BLOCK_SIZE; i++)
+    {
+    	buf[i] = 0x00;
+    }
+    buf[0] = 0x01;
+    buf[1] = 0x01;
+    _disk->write(FREELIST_BLOCK_NO, buf);
+
     //assert(false);
+    return true;
 }
 
 Inode * FileSystem::LookupFile(int _file_id) {
     Console::puts("looking up file with id = "); Console::puti(_file_id); Console::puts("\n");
     /* Here you go through the inode list to find the file. */
-    for(unsigned int i = 0; i < inodes_count; i++)
+    for(unsigned int i = 0; i < MAX_INODES; i++)
     {
     	if(inodes[i].id == _file_id)
     	return &inodes[i];
@@ -138,12 +168,27 @@ bool FileSystem::CreateFile(int _file_id) {
        if(LookupFile(_file_id))
        {
        	Console::puts("File already exists");
-       	assert(false);
+       	return false;
        }
        
+       unsigned long block_no = GetFreeBlock();
+       if(block_no == 0xFFFFFFFF)
+       {
+       	Console::puts("No more free blocks");
+       	return false;	
+       }
        
+       unsigned long inode_index = GetFreeInode();
        
-
+       //Assign the file properties
+       
+       free_blocks[block_no] = 1;                 //Occupied block bitmap
+       
+       inodes[inode_index].id = _file_id;
+       inodes[inode_index].block_no = block_no;
+       
+       return true;
+       
 }
 
 bool FileSystem::DeleteFile(int _file_id) {
@@ -151,4 +196,22 @@ bool FileSystem::DeleteFile(int _file_id) {
     /* First, check if the file exists. If not, throw an error. 
        Then free all blocks that belong to the file and delete/invalidate 
        (depending on your implementation of the inode list) the inode. */
+       
+      Inode *node = new Inode;
+       
+      if(!(node = LookupFile(_file_id)))
+       {
+       	Console::puts("File doesn't exist");
+       	return false;
+       }
+       
+       //Invalidate the file properties
+       
+       free_blocks[node->block_no] = 0;                 //Occupied block bitmap
+       
+       node->id = 0xFFFFFFFF;
+       node->block_no = 0xFFFFFFFF;
+       
+       return true;
+       
 }

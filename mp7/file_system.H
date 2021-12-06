@@ -44,6 +44,7 @@ class Inode
 
 private:
   long id; // File "name"
+  unsigned long block_no;
 
   /* You will need additional information in the inode, such as allocation 
      information. */
@@ -82,7 +83,7 @@ private:
   /* Just as an example, you can store MAX_INODES in a single INODES block */
 
   Inode *inodes; // the inode list
-  unsigned long inodes_count;    //max value is MAX_INODES
+  //unsigned long inodes_count;    //max value is MAX_INODES
   /* The inode list */
 
   unsigned char *free_blocks;
@@ -93,8 +94,9 @@ private:
      0 - FREE  1 - OCCUPIED
      If you reserve one block to store the "free list", you can handle a file system up to 
      256kB. (Large enough as a proof of concept.) */
-  unsigned long free_blocks_count;
-  short GetFreeInode();
+  //unsigned long free_blocks_count;
+  
+  unsigned long GetFreeInode();
   unsigned long GetFreeBlock();
   /* It may be helpful to two functions to hand out free inodes in the inode list and free
      blocks. These functions also come useful to class Inode and File. */
@@ -112,6 +114,7 @@ public:
 
   static bool Format(SimpleDisk *_disk, unsigned int _size);
   /* Wipes any file system from the disk and installs an empty file system of given size. */
+  
 
   Inode *LookupFile(int _file_id);
   /* Find file with given id in file system. If found, return its inode. 
