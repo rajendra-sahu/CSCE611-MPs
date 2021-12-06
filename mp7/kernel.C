@@ -135,6 +135,12 @@ void exercise_file_system(FileSystem * _file_system) {
         file1.Reset();
         char result1[30];
         assert(file1.Read(20, result1) == 20);
+        /*int read_result = file1.Read(20, result1);
+        if(read_result != 20)
+        {
+        	Console::puts("Read result  = "); Console::puti(read_result); Console::puts("\n");
+        	assert(false);
+        }*/
         for(int i = 0; i < 20; i++) {
              assert(result1[i] == STRING1[i]);
         }

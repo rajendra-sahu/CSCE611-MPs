@@ -45,6 +45,8 @@ class Inode
 private:
   long id; // File "name"
   unsigned long block_no;
+  unsigned long size;
+  unsigned long padding;            // to make it byte addressable.
 
   /* You will need additional information in the inode, such as allocation 
      information. */
@@ -56,6 +58,8 @@ private:
 
   /* You may need a few additional functions to help read and store the 
      inodes from and to disk. */
+public: 
+  //void inodes_to_and_from_disk();
 };
 
 /*--------------------------------------------------------------------------*/
@@ -78,7 +82,8 @@ private:
 
   SimpleDisk *disk;
   unsigned int size;
-
+  
+  static FileSystem* current_fs;
   static constexpr unsigned int MAX_INODES = SimpleDisk::BLOCK_SIZE / sizeof(Inode);
   /* Just as an example, you can store MAX_INODES in a single INODES block */
 
@@ -126,5 +131,8 @@ public:
 
   bool DeleteFile(int _file_id);
   /* Delete file with given id in the file system; free any disk block occupied by the file. */
+  
+  bool DiskOperation(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf);
+  void inodes_to_and_from_disk();                //move this to inode TODO
 };
 #endif

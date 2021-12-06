@@ -31,12 +31,18 @@
 /* You may need to add a few functions, for example to help read and store 
    inodes from and to disk. */
 
+/*void Inode::inodes_to_and_from_disk()
+{
+	Console::puts("FileSystem DIsk Address "); Console::puti((int)(&(fs->disk))); Console::puts("\n");
+	fs->disk->write(INODES_BLOCK_NO, (unsigned char *)(fs->inodes));
+}*/
+
 /*--------------------------------------------------------------------------*/
 /* CLASS FileSystem */
 /*--------------------------------------------------------------------------*/
 
 
-//FileSystem* FileSystem::current_fs = NULL;
+FileSystem* FileSystem::current_fs = NULL;
 /*--------------------------------------------------------------------------*/
 /* CONSTRUCTOR */
 /*--------------------------------------------------------------------------*/
@@ -44,11 +50,13 @@
 FileSystem::FileSystem() {
     Console::puts("In file system constructor, allocating inodes & freelist block\n");
     
+    disk = NULL;
+    size = 0;
     inodes =  (Inode *)(new unsigned char[DISK_BLOCK_SIZE]);           //Allocating a block for inodes
     free_blocks = new unsigned char[DISK_BLOCK_SIZE];                 //Allocating a block for freelist
     //inodes_count = 0;
     //free_blocks_count = 0;
-    //current_fs = this;
+    current_fs = this;
     //assert(false);
 }
 
@@ -126,7 +134,9 @@ bool FileSystem::Format(SimpleDisk * _disk, unsigned int _size) { // static!
        and a free list. Make sure that blocks used for the inodes and for the free list
        are marked as used, otherwise they may get overwritten. */
        
-    //using the self defined fs stattic variable ; not using the parameters
+    current_fs->disk = _disk;
+    current_fs->size = _size;
+    
     unsigned char buf[DISK_BLOCK_SIZE];
     for(unsigned int i = 0; i < DISK_BLOCK_SIZE; i++)
     {
@@ -215,3 +225,21 @@ bool FileSystem::DeleteFile(int _file_id) {
        return true;
        
 }
+
+bool FileSystem::DiskOperation(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf)
+{
+	Console::puts("FileSystem DIsk Address "); Console::puti((int)(&disk)); Console::puts("\n");
+	if(_op == DISK_OPERATION::READ)
+	disk->read(_block_no, _buf);
+	else
+	disk->write(_block_no, _buf);
+	
+	return true;
+}
+
+void FileSystem::inodes_to_and_from_disk()
+{
+	//Console::puts("FileSystem DIsk Address "); Console::puti((int)(&(fs->disk))); Console::puts("\n");
+	disk->write(INODES_BLOCK_NO, (unsigned char *)(inodes));
+}
+
