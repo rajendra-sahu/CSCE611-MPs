@@ -48,7 +48,7 @@ File::~File() {
     //fs->disk->write(0, (unsigned char*)(fs->inodes));
     
     fs->DiskOperation(DISK_OPERATION::WRITE, inode->block_no, block_cache);   //Backing up latest file satte to the disk since we are closing the file.   TODO 
-    fs->inodes_to_and_from_disk();                                            //Move this to inode class                                                  TODO
+    inode->inodes_to_and_from_disk(DISK_OPERATION::WRITE);                                            
 }
 
 /*--------------------------------------------------------------------------*/
