@@ -34,9 +34,8 @@ File::File(FileSystem *_fs, int _id) {
     inode = fs->LookupFile(_id);
     current_position = 0;
     
-    //fs->disk->read(inode->block_no, block_cache);     //Reading the file into primamry memory
-    fs->DiskOperation(DISK_OPERATION::READ, inode->block_no, block_cache);
-    //assert(false);
+    fs->DiskOperation(DISK_OPERATION::READ, inode->block_no, block_cache);          //Reading the file into primamry memory
+
 }
 
 File::~File() {
@@ -44,10 +43,8 @@ File::~File() {
     /* Make sure that you write any cached data to disk. */
     /* Also make sure that the inode in the inode list is updated. */
     
-    //fs->disk->write(inode->block_no, block_cache);        
-    //fs->disk->write(0, (unsigned char*)(fs->inodes));
     
-    fs->DiskOperation(DISK_OPERATION::WRITE, inode->block_no, block_cache);   //Backing up latest file satte to the disk since we are closing the file.   TODO 
+    fs->DiskOperation(DISK_OPERATION::WRITE, inode->block_no, block_cache);   //Backing up latest file state (viz data block and inode)to the disk since we are closing the file
     inode->inodes_to_and_from_disk(DISK_OPERATION::WRITE);                                            
 }
 
@@ -61,7 +58,7 @@ int File::Read(unsigned int _n, char *_buf) {
     unsigned int read_count = 0;
     bool EoF_flag;
     
-    while(!(EoF_flag =EoF()) && (read_count<= _n))
+    while(  ((EoF_flag =EoF()) == false) && (read_count<= _n))
     {
     	_buf[read_count] = block_cache[current_position];
     	read_count++;
@@ -71,15 +68,21 @@ int File::Read(unsigned int _n, char *_buf) {
     if(EoF_flag)
     Reset();
     
-    return read_count-1;                //Check if the value is correct or not   TODO
-    //assert(false);
+    if(current_position == 0)
+    return read_count;                //return actual count since it hadn't exceeded the limit EoF case
+    else
+    return read_count-1;              //count has exceeded the limit
 }
 
 int File::Write(unsigned int _n, const char *_buf) {
     Console::puts("writing to file\n");
     
     unsigned int write_count = 0;
-    while(!(write_count > SimpleDisk::BLOCK_SIZE) && (write_count<= _n))
+    
+    if(_n > SimpleDisk::BLOCK_SIZE)            //If the intended size to be written is greater than a block trim it to the block
+    _n = SimpleDisk::BLOCK_SIZE;
+    
+    while(write_count<= _n)
     {
     	if(EoF())
     	Reset();
@@ -89,14 +92,13 @@ int File::Write(unsigned int _n, const char *_buf) {
     }
     
     inode->size = inode->size + write_count;
-    return write_count;                //Check if the value is correct or not    TODO
-    //assert(false);
+    return write_count-1;                      //Return n-1 since it had been incremented beyond the limit by 1
+
 }
 
 void File::Reset() {
     Console::puts("resetting file\n");
     current_position = 0;
-    //assert(false);
 }
 
 bool File::EoF() {
@@ -105,5 +107,4 @@ bool File::EoF() {
     return true;
     else
     return false;
-    //assert(false);
 }

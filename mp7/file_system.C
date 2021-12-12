@@ -28,15 +28,6 @@
 /* CLASS Inode */
 /*--------------------------------------------------------------------------*/
 
-Inode::Inode(FileSystem * _fs)
-{
-	Console::puts("In Inode constructor\n");
-	fs = _fs;
-	
-	id = 0xFFFFFFFF;
-  	block_no = 0xFFFFFFFF;
-  	size = 0xFFFFFFFF;           
-}
 /* You may need to add a few functions, for example to help read and store 
    inodes from and to disk. */
 
@@ -56,8 +47,6 @@ void Inode::inodes_to_and_from_disk(DISK_OPERATION _op)
 /* CLASS FileSystem */
 /*--------------------------------------------------------------------------*/
 
-
-//FileSystem* FileSystem::current_fs = NULL;
 /*--------------------------------------------------------------------------*/
 /* CONSTRUCTOR */
 /*--------------------------------------------------------------------------*/
@@ -65,18 +54,8 @@ void Inode::inodes_to_and_from_disk(DISK_OPERATION _op)
 FileSystem::FileSystem() {
     Console::puts("In file system constructor, allocating inodes & freelist block\n");
     
-    /*for(unsigned int i = 0; i< MAX_INODES; i++)
-    {
-    	inodes =  new Inode(this);           //Allocating a block for inodes
-    	inodes++;
-    }*/
-    
-    inodes = (Inode *)new unsigned char[DISK_BLOCK_SIZE];             //TODO Call inode constructor if possible
+    inodes = (Inode *)new unsigned char[DISK_BLOCK_SIZE];             //Allocating a block for inodes
     free_blocks = new unsigned char[DISK_BLOCK_SIZE];                 //Allocating a block for freelist
-    //inodes_count = 0;
-    //free_blocks_count = 0;
-    //current_fs = this;
-    //assert(false);
 }
 
 FileSystem::~FileSystem() {
@@ -90,7 +69,6 @@ FileSystem::~FileSystem() {
     delete []inodes;
     delete []free_blocks;
     
-    //assert(false);
 }
 
 
@@ -100,24 +78,15 @@ FileSystem::~FileSystem() {
 
 unsigned long FileSystem::GetFreeBlock()
 {
-    //bool free_found = false;
     for(unsigned int i = 0; i < DISK_BLOCK_SIZE; i++)
     {
     	if(free_blocks[i] == 0)
-    	{  //free_blocks_count++; 
-    	   return i; }
+    	{ return i; }                    //return block number viz i
     	
     }
     
     return 0xFFFFFFFF;                   //Indicator of no free blocks
     
-    /*if(free_blocks_count + 1 > 512)
-    return 0xFFFFFFFF;                   //Indicator of no free blocks
-    else
-    {
-	    free_blocks_count++;
-	    return free_blocks_count-1;
-    }*/
 	
 }
 
@@ -126,10 +95,10 @@ unsigned long FileSystem::GetFreeInode()
 	for(unsigned int i = 0; i < MAX_INODES; i++)
 	{
 		if(inodes[i].id == 0xFFFFFFFF)
-		return i;
+		return i;                            //return free inode viz i
 	}
 	
-	return 0xFFFFFFFF;
+	return 0xFFFFFFFF;                           //Indicator of no free inodes
 }
 
 bool FileSystem::Mount(SimpleDisk * _disk) {
@@ -164,6 +133,7 @@ bool FileSystem::Format(SimpleDisk * _disk, unsigned int _size) { // static!
     {
     	buf[i] = 0xFF;
     }
+    
     _disk->write(INODES_BLOCK_NO, buf);
     
     for(unsigned int i = 0; i < DISK_BLOCK_SIZE; i++)
@@ -213,17 +183,23 @@ bool FileSystem::CreateFile(int _file_id) {
        
        unsigned long inode_index = GetFreeInode();
        
+       if(block_no == 0xFFFFFFFF)
+       {
+       	Console::puts("No more free inodes");
+       	return false;	
+       }
+       
+       
+       
        //Assign the file properties
        
        free_blocks[block_no] = 1;                 //Occupied block bitmap
        
        inodes[inode_index].id = _file_id;
        inodes[inode_index].block_no = block_no;
-       inodes[inode_index].fs = this;             //TODO let the inode constructor handle this 
-       
+       inodes[inode_index].fs = this;              
     
        return true;
-       
 }
 
 bool FileSystem::DeleteFile(int _file_id) {
@@ -232,7 +208,7 @@ bool FileSystem::DeleteFile(int _file_id) {
        Then free all blocks that belong to the file and delete/invalidate 
        (depending on your implementation of the inode list) the inode. */
        
-      Inode *node = new Inode(this);
+      Inode *node = new Inode();
        
       if(!(node = LookupFile(_file_id)))
        {
@@ -259,6 +235,8 @@ bool FileSystem::DeleteFile(int _file_id) {
 bool FileSystem::DiskOperation(DISK_OPERATION _op, unsigned long _block_no, unsigned char * _buf)
 {
 	Console::puts("FileSystem DIsk Address "); Console::puti((int)(&disk)); Console::puts("\n");
+	
+	
 	if(_op == DISK_OPERATION::READ)
 	disk->read(_block_no, _buf);
 	else
@@ -267,9 +245,4 @@ bool FileSystem::DiskOperation(DISK_OPERATION _op, unsigned long _block_no, unsi
 	return true;
 }
 
-/*void FileSystem::inodes_to_and_from_disk()
-{
-	//Console::puts("FileSystem DIsk Address "); Console::puti((int)(&(fs->disk))); Console::puts("\n");
-	disk->write(INODES_BLOCK_NO, (unsigned char *)(inodes));
-}*/
 
