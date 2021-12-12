@@ -191,7 +191,11 @@ bool FileSystem::CreateFile(int _file_id) {
        
        inodes[inode_index].id = _file_id;
        inodes[inode_index].block_no = block_no;
-       inodes[inode_index].fs = this;              
+       inodes[inode_index].fs = this;
+       
+       
+      DiskOperation(DISK_OPERATION::WRITE, INODES_BLOCK_NO, (unsigned char *)(inodes));
+      DiskOperation(DISK_OPERATION::WRITE, FREELIST_BLOCK_NO, free_blocks);              
     
        return true;
 }
