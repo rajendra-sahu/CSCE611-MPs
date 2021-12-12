@@ -191,6 +191,7 @@ bool FileSystem::CreateFile(int _file_id) {
        
        inodes[inode_index].id = _file_id;
        inodes[inode_index].block_no = block_no;
+       inodes[inode_index].size = 0;
        inodes[inode_index].fs = this;
        
        
