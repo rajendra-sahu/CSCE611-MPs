@@ -35,6 +35,7 @@ File::File(FileSystem *_fs, int _id) {
     current_position = 0;
     
     fs->DiskOperation(DISK_OPERATION::READ, inode->block_no, block_cache);          //Reading the file into primamry memory
+    /*don't need to read the inode it is already in the memroy while creating the file*/
 
 }
 
@@ -58,6 +59,7 @@ int File::Read(unsigned int _n, char *_buf) {
     unsigned int read_count = 0;
     bool EoF_flag;
     
+    /*read till read count is _n but also shouldn't exceed the file block boundary*/
     while(  ((EoF_flag =EoF()) == false) && (read_count<= _n))
     {
     	_buf[read_count] = block_cache[current_position];
@@ -82,6 +84,7 @@ int File::Write(unsigned int _n, const char *_buf) {
     if(_n > SimpleDisk::BLOCK_SIZE)            //If the intended size to be written is greater than a block trim it to the block
     _n = SimpleDisk::BLOCK_SIZE;
     
+    /*write the _n bytes only if it's not bigger than a block though it can wrap around EoF*/
     while(write_count<= _n)
     {
     	if(EoF())

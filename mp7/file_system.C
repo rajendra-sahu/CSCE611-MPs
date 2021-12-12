@@ -116,7 +116,6 @@ bool FileSystem::Mount(SimpleDisk * _disk) {
     return true;
     else
     return false;
-    //assert(false);
 }
 
 bool FileSystem::Format(SimpleDisk * _disk, unsigned int _size) { // static!
@@ -125,13 +124,11 @@ bool FileSystem::Format(SimpleDisk * _disk, unsigned int _size) { // static!
        and a free list. Make sure that blocks used for the inodes and for the free list
        are marked as used, otherwise they may get overwritten. */
        
-    //current_fs->disk = _disk;
-    //current_fs->size = _size;
     
     unsigned char buf[DISK_BLOCK_SIZE];
     for(unsigned int i = 0; i < DISK_BLOCK_SIZE; i++)
     {
-    	buf[i] = 0xFF;
+    	buf[i] = 0xFF;                                              //0xFFFFFFFF denotes nothing meaningful is stored in inodes
     }
     
     _disk->write(INODES_BLOCK_NO, buf);
@@ -144,7 +141,6 @@ bool FileSystem::Format(SimpleDisk * _disk, unsigned int _size) { // static!
     buf[1] = 0x01;
     _disk->write(FREELIST_BLOCK_NO, buf);
 
-    //assert(false);
     return true;
 }
 
@@ -153,13 +149,11 @@ Inode * FileSystem::LookupFile(int _file_id) {
     /* Here you go through the inode list to find the file. */
     for(unsigned int i = 0; i < MAX_INODES; i++)
     {
-    	//Console::puts("Node fs"); Console::puti((int)(inodes[i].fs)); Console::puts("\n");
     	if(inodes[i].id == _file_id)
     	return &inodes[i];
     }
     Console::puts("No such file exist, returning NULL ");
     return NULL;
-    //assert(false);
 }
 
 bool FileSystem::CreateFile(int _file_id) {
@@ -218,7 +212,7 @@ bool FileSystem::DeleteFile(int _file_id) {
        
        //Invalidate the file properties
        
-       free_blocks[node->block_no] = 0;                 //Occupied block bitmap
+       free_blocks[node->block_no] = 0;                 //Free the block bitmap
        
        node->id = 0xFFFFFFFF;
        node->block_no = 0xFFFFFFFF;
